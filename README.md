@@ -19,11 +19,6 @@ pip install git+https://github.com/elexis-eu/edie.git
 ```
 (you may need to run `pip` with root permission: `sudo pip install git+https://github.com/elexis-eu/edie.git`)
 
-Then import the package:
-```python
-import openapi_client
-```
-
 ### Setuptools
 
 Install via [Setuptools](http://pypi.python.org/pypi/setuptools).

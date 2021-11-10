@@ -1,6 +1,6 @@
 import argparse
 import sys
-from metrics.base import FormsPerEntryMetric
+from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator
 import json
 from elexis_client.api import ApiClient
 from elexis_client.model import Metadata, Entry, JsonEntry
@@ -10,10 +10,12 @@ LIMIT = 100
 
 metadata_metrics = []
 
-entry_metrics = [FormsPerEntryMetric()]
+entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator()]
+
 
 def list_dictionaries(api_instance):
     return api_instance.dictionaries()["dictionaries"]
+
 
 def entry_report(api_instance, dictionary, entry, dict_report):
     if "json" in entry.formats:
@@ -27,18 +29,18 @@ def entry_report(api_instance, dictionary, entry, dict_report):
                 entry_metric.accumulate(json_entry)
     else:
         print("TODO: non-JSON entries")
-    
+
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser("ELEXIS Dictionary Evaluation Tool (EDiE)")
     argparser.add_argument("--server", action="store_true",
-            help="Start in server mode")
+                           help="Start in server mode")
     argparser.add_argument("-d", nargs="+",
-            help="Dictionaries to evaluate")
-    argparser.add_argument("-e", 
-            help="Endpoint to query")
+                           help="Dictionaries to evaluate")
+    argparser.add_argument("-e",
+                           help="Endpoint to query")
     argparser.add_argument("-m", nargs="+",
-            help="List of metrics to evaluate")
+                           help="List of metrics to evaluate")
 
     args = argparser.parse_args()
     if args.server:
@@ -63,7 +65,7 @@ if __name__ == "__main__":
                 report["dictionaries"][dictionary] = dict_report
 
                 metadata = Metadata(api_instance.about(dictionary))
-                
+
                 if metadata.errors:
                     dict_report["metadataErrors"] = metadata.errors
                 else:
@@ -83,13 +85,13 @@ if __name__ == "__main__":
                                 dict_report["entryErrors"] = []
                             dict_report["entryErrors"].extend(entry.errors)
                         else:
-                            entry_report(api_instance, dictionary, entry, 
-                                    dict_report)
+                            entry_report(api_instance, dictionary, entry,
+                                         dict_report)
 
                     offset += LIMIT
                 for entry_metric in entry_metrics:
                     dict_report.update(entry_metric.result())
-                
+
         except RequestException as e:
             report["available"] = False
 

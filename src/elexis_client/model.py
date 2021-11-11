@@ -1,6 +1,7 @@
 import re
 import dateutil.parser
 
+
 class Metadata(object):
     def __init__(self, json):  # noqa: E501
         """ The metadata object
@@ -55,23 +56,23 @@ class Metadata(object):
         self.errors = []
 
         if "release" in json:
-            if json["release"] in ["PUBLIC", "NONCOMMERCIAL", "RESEARCH", "PRIVATE"]: 
+            if json["release"] in ["PUBLIC", "NONCOMMERCIAL", "RESEARCH", "PRIVATE"]:
                 self.release = json["release"]
             else:
-                self.errors.append("Release value was invalid: " 
-                        + str(json["release"]))
+                self.errors.append("Release value was invalid: "
+                                   + str(json["release"]))
                 self.release = None
         else:
             self.errors.append("Release not specified")
             self.release = None
 
         if "sourceLanguage" in json:
-            if (isinstance(json["sourceLanguage"], str) and 
+            if (isinstance(json["sourceLanguage"], str) and
                     re.match("^\\w{2,3}$", json["sourceLanguage"])):
                 self.source_language = json["sourceLanguage"]
             else:
                 self.errors.append("Source language value was invalid: "
-                        + str(json["sourceLanguage"]))
+                                   + str(json["sourceLanguage"]))
                 self.source_language = None
         else:
             self.errors.append("Source language not specified")
@@ -79,12 +80,12 @@ class Metadata(object):
 
         if "targetLanguage" in json:
             if (isinstance(json["targetLanguage"], list) and
-                all(isinstance(x, str) and re.match("^\\w{2,3}$", x) 
+                    all(isinstance(x, str) and re.match("^\\w{2,3}$", x)
                         for x in json["targetLanguage"])):
                 self.target_language = json["targetLanguage"]
             else:
                 self.errors.append("Target language value was invalid: "
-                        + str(json["targetLanguage"]))
+                                   + str(json["targetLanguage"]))
                 self.target_language = None
         else:
             self.errors.append("Target language(s) not specified")
@@ -92,35 +93,34 @@ class Metadata(object):
 
         if "genre" in json:
             if (isinstance(json["genre"], list) and
-                all(g in [ "gen", "lrn", "ety", "spe", "his", "ort", "trm" ]
-                    for g in json["genre"])):
+                    all(g in ["gen", "lrn", "ety", "spe", "his", "ort", "trm"]
+                        for g in json["genre"])):
                 self.genre = json["genre"]
             else:
                 self.errors.append("Genre value was invalid: "
-                        + str(json["genre"]))
+                                   + str(json["genre"]))
                 self.genre = None
         else:
             self.errors.append("Genre(s) not specified")
 
         if "license" in json:
-            if (isinstance(json["license"], str) and 
+            if (isinstance(json["license"], str) and
                     re.match("^https?:.*$", json["license"])):
                 self.license = json["license"]
             else:
                 self.errors.append("License value was invalid: "
-                        + str(json["license"]))
+                                   + str(json["license"]))
                 self.license = None
         else:
             self.errors.append("License not specified")
             self.license = None
-
 
         if "title" in json:
             if isinstance(json["title"], str):
                 self.title = json["title"]
             else:
                 self.errors.append("Title value was invalid: "
-                        + str(json["title"]))
+                                   + str(json["title"]))
                 self.title = None
         else:
             self.errors.append("Title not specified")
@@ -134,12 +134,12 @@ class Metadata(object):
                     self.errors.extend(a.errors)
             else:
                 self.errors.append("Creator value was invalid: "
-                        + str(json["creator"]))
+                                   + str(json["creator"]))
                 self.agent = None
         else:
             self.errors.append("Creator not specified")
             self.title = None
-            
+
         if "publisher" in json:
             if (isinstance(json["publisher"], list) and
                     all(isinstance(a, object) for a in json["publisher"])):
@@ -148,7 +148,7 @@ class Metadata(object):
                     self.errors.extend(a.errors)
             else:
                 self.errors.append("Publisher value was invalid: "
-                        + str(json["publisher"]))
+                                   + str(json["publisher"]))
                 self.agent = None
         else:
             self.errors.append("Publisher not specified")
@@ -201,7 +201,6 @@ class Metadata(object):
         self.type = self._extract_string_prop(json, 'type')
         self.valid = self._extract_date_prop(json, 'valid')
 
-
     def _extract_string_prop(self, json, prop):
         if prop in json:
             if isinstance(json[prop], str):
@@ -232,20 +231,22 @@ class Metadata(object):
                 self.errors.append(f"Value for {prop} was invalid: {json[prop]}")
         return None
 
+
 class Agent(object):
     def __init__(self, obj):
         self.errors = []
         # TODO
 
+
 class Entry(object):
     def __init__(self, json):
-        self.errors = [] 
+        self.errors = []
         if "release" in json:
-            if json["release"] in ["PUBLIC", "NONCOMMERCIAL", "RESEARCH", "PRIVATE"]: 
+            if json["release"] in ["PUBLIC", "NONCOMMERCIAL", "RESEARCH", "PRIVATE"]:
                 self.release = json["release"]
             else:
-                self.errors.append("Release value was invalid: " 
-                        + str(json["release"]))
+                self.errors.append("Release value was invalid: "
+                                   + str(json["release"]))
                 self.release = None
         else:
             self.errors.append("Release not specified")
@@ -256,19 +257,19 @@ class Entry(object):
                 self.lemma = json["lemma"]
             else:
                 self.errors.append("Lemma value was invalid: "
-                        + str(json["lemma"]))
+                                   + str(json["lemma"]))
                 self.lemma = None
         else:
             self.errors.append("Lemma not specified")
             self.lemma = None
 
         if "language" in json:
-            if (isinstance(json["language"], str) and 
+            if (isinstance(json["language"], str) and
                     re.match("^\\w{2,3}$", json["language"])):
                 self.language = json["language"]
             else:
                 self.errors.append("Language value was invalid: "
-                        + str(json["language"]))
+                                   + str(json["language"]))
                 self.language = None
         else:
             self.language = None
@@ -278,33 +279,33 @@ class Entry(object):
                 self.id = json["id"]
             else:
                 self.errors.append("ID value was invalid: "
-                        + str(json["id"]))
+                                   + str(json["id"]))
                 self.id = None
         else:
             self.errors.append("ID not specified")
             self.id = None
 
         if "partOfSpeech" in json:
-            if (isinstance(json["partOfSpeech"], list) and 
-                    all(p in [ "ADJ", "ADP", "ADV", "AUX", "CCONJ", 
-                    "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", 
-                    "PUNCT", "SCONJ", "SYM", "VERB", "X" ] 
-                    for p in json["partOfSpeech"])):
+            if (isinstance(json["partOfSpeech"], list) and
+                    all(p in ["ADJ", "ADP", "ADV", "AUX", "CCONJ",
+                              "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
+                              "PUNCT", "SCONJ", "SYM", "VERB", "X"]
+                        for p in json["partOfSpeech"])):
                 self.part_of_speech = json["partOfSpeech"]
             else:
                 self.errors.append("Part of speech value was invalid: "
-                        + str(json["partOfSpeech"]))
+                                   + str(json["partOfSpeech"]))
                 self.part_of_speech = None
         else:
             self.part_of_speech = None
 
         if "formats" in json:
             if (isinstance(json["formats"], list) and
-                    all(f in ["tei","json","ontolex"] for f in json["formats"])):
+                    all(f in ["tei", "json", "ontolex"] for f in json["formats"])):
                 self.formats = json["formats"]
             else:
                 self.errors.append("Format value was invalid: "
-                        + str(json["formats"]))
+                                   + str(json["formats"]))
                 self.formats = []
         else:
             self.formats = []
@@ -314,7 +315,5 @@ class JsonEntry(object):
     def __init__(self, json):
         self.errors = []
         self.other_form = []
+        self.senses = json['senses']
         # TODO
-
-
-

@@ -68,3 +68,5 @@ target/
 *.swp
 .openapi-generator
 .openapi-generator-ignore
+
+.idea

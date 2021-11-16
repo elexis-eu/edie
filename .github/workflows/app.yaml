@@ -17,19 +17,15 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install pipenv
+      - name: Install pytest
         run: |
-          python -m pip install --upgrade pipenv wheel
-      - id: cache-pipenv
-        uses: actions/cache@v1
-        with:
-          path: ~/.local/share/virtualenvs
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-
-      - name: Install dependencies
-        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+          python -m pip install pytest
+      - name: Run pytest
         run: |
-          pipenv install --deploy --dev
-      - name: Run test suite
-        run: |
-          pipenv run test -v
+          python -m pytest
+          #        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+          #        run: |
+          #          pipenv install --deploy --dev
+          #      - name: Run test suite
+          #        run: |
+          #          pipenv run test -v

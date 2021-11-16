@@ -10,7 +10,7 @@
 
 from setuptools import setup, find_packages  # noqa: H301
 
-NAME = "openapi-client"
+NAME = "edie"
 VERSION = "1.0.0"
 # To install the library, run the following
 #
@@ -29,15 +29,15 @@ setup(
     version=VERSION,
     description="ELEXIS Protocol for accessing dictionaries",
     author="ELEXIS Project",
-    author_email="team@openapitools.org",
+    author_email="john@mccr.ae",
     url="",
-    keywords=["OpenAPI", "OpenAPI-Generator", "ELEXIS Protocol for accessing dictionaries"],
+    keywords=["ELEXIS Protocol for accessing dictionaries"],
     python_requires=">=3.6",
     install_requires=REQUIRES,
     packages=find_packages(exclude=["test", "tests"]),
     include_package_data=True,
     license="Public Domain",
     long_description="""\
-    This protocol allows data to be shared with the ELEXIS platform and should be implemented by all providers of data to the ELEXIS platform. This is an OpenAPI documentation, for more details about using this specification, please refer to OpenAPI documentations: https://swagger.io/resources/articles/documenting-apis-with-swagger/  # noqa: E501
+            This is a tool for evaluating the content of dictionaries using the ELEXIS protocols
     """
 )

@@ -40,7 +40,7 @@ class TestNumberOfSenses(unittest.TestCase):
         pass
 
     def testEntry(self):
-        f = open("data/entries.json")
+        f = open("test/data/entries.json")
         entry_json = json.load(f)
         entry: JsonEntry = JsonEntry(entry_json)
         evaluator = NumberOfSensesEvaluator()

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator
+from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, AvgDefinitionLengthEvaluator
 import json
 from elexis_client.api import ApiClient
 from elexis_client.model import Metadata, Entry, JsonEntry
@@ -10,7 +10,7 @@ LIMIT = 100
 
 metadata_metrics = []
 
-entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator()]
+entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), AvgDefinitionLengthEvaluator()]
 
 
 def list_dictionaries(api_instance):

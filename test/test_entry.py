@@ -47,7 +47,7 @@ class TestDefinitionOfSenses(unittest.TestCase):
 
     def test_reset(self) -> None:
         evaluator = DefinitionOfSenseEvaluator()
-        f = open("data/entries.json")
+        f = open("test/data/entries.json")
         entry_json = json.load(f)
         entry: JsonEntry = JsonEntry(entry_json)
         evaluator.accumulate(entry)
@@ -60,7 +60,7 @@ class TestDefinitionOfSenses(unittest.TestCase):
 
     def test_result(self) -> None:
         evaluator = DefinitionOfSenseEvaluator()
-        f = open("data/entries.json")
+        f = open("test/data/entries.json")
         entry_json = json.load(f)
         entry: JsonEntry = JsonEntry(entry_json)
         evaluator.accumulate(entry)
@@ -72,17 +72,17 @@ class TestDefinitionOfSenses(unittest.TestCase):
 
 
 
-def test_entry(self) -> None:
-        f = open("data/entries.json")
-        entry_json = json.load(f)
-        entry: JsonEntry = JsonEntry(entry_json)
-        evaluator = DefinitionOfSenseEvaluator()
+    def test_entry(self) -> None:
+            f = open("test/data/entries.json")
+            entry_json = json.load(f)
+            entry: JsonEntry = JsonEntry(entry_json)
+            evaluator = DefinitionOfSenseEvaluator()
 
-        evaluator.accumulate(entry)
+            evaluator.accumulate(entry)
 
-        self.assertEqual(evaluator.entry_count, 1)
-        self.assertEqual(evaluator.senses_count, 1)
-        self.assertEqual(evaluator.definition_count, 1)
+            self.assertEqual(evaluator.entry_count, 1)
+            self.assertEqual(evaluator.senses_count, 1)
+            self.assertEqual(evaluator.definition_count, 1)
 
 
 class TestNumberOfSenses(unittest.TestCase):
@@ -94,7 +94,7 @@ class TestNumberOfSenses(unittest.TestCase):
         pass
 
     def testEntry(self):
-        f = open("data/entries.json")
+        f = open("test/data/entries.json")
         entry_json = json.load(f)
         entry: JsonEntry = JsonEntry(entry_json)
         evaluator = NumberOfSensesEvaluator()

@@ -8,7 +8,6 @@
 """
 
 import sys
-print(sys.path)
 import unittest
 import json
 

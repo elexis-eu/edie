@@ -2,8 +2,8 @@ import argparse
 import sys
 from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator
 import json
-from elexis_client.api import ApiClient
-from elexis_client.model import Metadata, Entry, JsonEntry
+from edie.api import ApiClient
+from edie.model import Metadata, Entry, JsonEntry
 from requests.exceptions import RequestException
 
 LIMIT = 100

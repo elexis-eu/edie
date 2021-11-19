@@ -11,8 +11,8 @@ import sys
 import unittest
 import json
 
-from src.elexis_client.model import JsonEntry
-from src.metrics.base import NumberOfSensesEvaluator
+from edie.model import JsonEntry
+from metrics.base import NumberOfSensesEvaluator
 
 
 class TestEntry(unittest.TestCase):

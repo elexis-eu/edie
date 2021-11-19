@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from elexis_client.model import Entry, JsonEntry
+from edie.model import Entry, JsonEntry
 
 
 class MetadataMetric(ABC):

@@ -25,9 +25,9 @@ jobs:
           python setup.py install --user
       - name: Run pytest
         run: |
-          PYTHON_PATH=.:./src python -m pytest
+          python -m pytest
         env:
-          PYTHON_PATH: /home/runner/work/edie/edie/src/
+          PYTHONPATH: ./src
           #        if: steps.cache-pipenv.outputs.cache-hit != 'true'
           #        run: |
           #          pipenv install --deploy --dev

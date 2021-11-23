@@ -44,8 +44,7 @@ class TestNumberOfSenses(unittest.TestCase):
         entry_json = json.load(f)
         f.close()
 
-        #entry: JsonEntry = JsonEntry(entry_json) # TODO: should be Entry()
-        entry: Entry = Entry(entry_json)
+        entry: JsonEntry = JsonEntry(entry_json) # TODO: should be Entry()
 
         evaluator = NumberOfSensesEvaluator()
 

@@ -1,14 +1,9 @@
 from abc import ABC, abstractmethod
 
-from edie.model import Entry, JsonEntry
+from src.edie.model import Entry, JsonEntry
 
 
-class MetadataMetric(ABC):
-    """Abstract class for a metric that depends on only the metadata"""
 
-    @abstractmethod
-    def apply(metadata):
-        pass
 
 
 class EntryMetric(ABC):

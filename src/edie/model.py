@@ -141,18 +141,22 @@ class Metadata(object):
             self.title = None
 
         if "publisher" in json:
+
             if (isinstance(json["publisher"], list) and
                     all(isinstance(a, object) for a in json["publisher"])):
-                self.agent = [Agent(a) for a in json["publisher"]]
+                self.publisher = [Agent(a) for a in json["publisher"]]
                 for a in self.agent:
                     self.errors.extend(a.errors)
             else:
                 self.errors.append("Publisher value was invalid: "
                                    + str(json["publisher"]))
-                self.agent = None
+                self.publisher = None
         else:
             self.errors.append("Publisher not specified")
-            self.title = None
+            self.publisher = None
+
+
+
         self.abstract = self._extract_string_prop(json, 'abstract')
         self.accrual_method = self._extract_string_prop(json, 'accrualMethod')
         self.accrual_periodicity = self._extract_string_prop(json, 'accrualPeriodicity')
@@ -315,5 +319,10 @@ class JsonEntry(object):
     def __init__(self, json):
         self.errors = []
         self.other_form = []
-        self.senses = json['senses']
+        if 'senses' in json:
+            self.senses = json['senses']
+        else:
+            self.senses = []
+
         # TODO
+

@@ -70,3 +70,6 @@ target/
 .openapi-generator-ignore
 
 .idea
+.DS_Store
+src/.DS_Store
+

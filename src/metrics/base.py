@@ -3,6 +3,33 @@ from abc import ABC, abstractmethod
 from edie.model import Entry, JsonEntry
 
 
+class MetadataMetric(ABC):
+    """Abstract class for a metric that depends on only the metadata"""
+
+    @abstractmethod
+    def analyze(self, metadata):
+        pass
+
+
+class PublisherEvaluator(MetadataMetric):
+    def __init__(self):
+        self.publisher = ''
+        self.publisher_info_present = False
+
+    def analyze(self, metadata):
+        if metadata.publisher:
+            self.publisher = metadata.publisher
+            self.publisher_info_present = True
+
+class LicenseEvaluator(MetadataMetric):
+    def __init__(self):
+        self.license = ''
+        self.license_info_present = False
+
+    def analyze(self, metadata):
+        if metadata.license:
+            self.license = metadata.license
+            self.license_info_present = True
 
 
 

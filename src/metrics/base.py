@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.edie.model import Entry, JsonEntry
+from edie.model import Entry, JsonEntry
 
 
 

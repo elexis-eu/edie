@@ -40,7 +40,7 @@ class TestNumberOfSenses(unittest.TestCase):
         pass
 
     def testEntry(self):
-        f = open("../test/data/entries.json")
+        f = open("test/data/entries.json")
         entry_json = json.load(f)
         f.close()
 
@@ -64,7 +64,7 @@ class TestMetadata(unittest.TestCase):
         pass
 
     def testEntry(self):
-        f = open("../test/data/sample.json")
+        f = open("test/data/sample.json")
         entry_json = json.load(f)
         f.close()
 

@@ -12,7 +12,7 @@ import unittest
 import json
 
 from edie.model import JsonEntry, Metadata, Entry
-from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator
+from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQualityEvaluator
 
 
 class TestEntry(unittest.TestCase):
@@ -56,8 +56,9 @@ class TestNumberOfSenses(unittest.TestCase):
 class TestMetadata(unittest.TestCase):
 
     def setUp(self):
-        #self.publisherEvaluator: PublisherEvaluator = PublisherEvaluator()
+        self.publisherEvaluator: PublisherEvaluator = PublisherEvaluator()
         self.licenseEvaluator: LicenseEvaluator = LicenseEvaluator()
+        self.metadataEvaluator: MetadataQualityEvaluator = MetadataQualityEvaluator()
 
     def tearDown(self):
         pass
@@ -77,6 +78,10 @@ class TestMetadata(unittest.TestCase):
         evaluator = LicenseEvaluator()
         evaluator.analyze(entry)
         self.assertTrue(evaluator.license_info_present, 'License info missing')
+
+        evaluator = MetadataQualityEvaluator()
+        evaluator.analyze(entry)
+        self.assertGreaterEqual(evaluator.metric_count, 5, 'Less than 5 metrics present')
 
 
 

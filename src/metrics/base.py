@@ -31,7 +31,14 @@ class LicenseEvaluator(MetadataMetric):
             self.license = metadata.license
             self.license_info_present = True
 
+class MetadataQualityEvaluator(MetadataMetric):
+    def __init__(self):
+        self.metric_count = 0
 
+    def analyze(self, metadata):
+        for el in vars(metadata):
+            if vars(metadata)[el]!=None:
+                self.metric_count+=1
 
 class EntryMetric(ABC):
     """Abstract class for a metric that accumulates information by iterating

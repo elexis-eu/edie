@@ -3,6 +3,7 @@ import dateutil.parser
 
 
 class Metadata(object):
+
     def __init__(self, json):  # noqa: E501
         """ The metadata object
             abstract (str): A summary of the resource.. [optional]  # noqa: E501
@@ -141,7 +142,7 @@ class Metadata(object):
             self.title = None
 
         if "publisher" in json:
-
+            # self.agent instead of self.publisher ?
             if (isinstance(json["publisher"], list) and
                     all(isinstance(a, object) for a in json["publisher"])):
                 self.publisher = [Agent(a) for a in json["publisher"]]

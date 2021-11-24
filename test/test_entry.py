@@ -11,8 +11,8 @@ import sys
 import unittest
 import json
 
-from edie.model import JsonEntry, Metadata, Entry
-from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQualityEvaluator
+from src.edie.model import JsonEntry, Metadata, Entry
+from src.metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQualityEvaluator
 
 
 class TestEntry(unittest.TestCase):

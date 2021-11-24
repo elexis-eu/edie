@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from edie.model import Entry, JsonEntry
+from src.edie.model import Entry, JsonEntry
 
 
 class MetadataMetric(ABC):

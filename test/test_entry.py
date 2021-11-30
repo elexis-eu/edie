@@ -12,7 +12,7 @@ import unittest
 import json
 
 from src.edie.model import JsonEntry, Metadata, Entry
-from src.metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQualityEvaluator, RecencyEvaluator
+from src.metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator
 
 
 class TestEntry(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestMetadata(unittest.TestCase):
     def setUp(self):
         self.publisherEvaluator: PublisherEvaluator = PublisherEvaluator()
         self.licenseEvaluator: LicenseEvaluator = LicenseEvaluator()
-        self.metadataEvaluator: MetadataQualityEvaluator = MetadataQualityEvaluator()
+        self.metadataEvaluator: MetadataQuantityEvaluator = MetadataQuantityEvaluator()
 
     def tearDown(self):
         pass
@@ -84,9 +84,11 @@ class TestMetadata(unittest.TestCase):
         self.assertIsNotNone(evaluator.recency, 'Cannot estimate recency')
         self.assertLessEqual(evaluator.recency, 50, 'Dictionary is older than 50 years')
 
-        evaluator = MetadataQualityEvaluator()
+        evaluator = MetadataQuantityEvaluator()
         evaluator.analyze(metadata_entry)
-        self.assertGreaterEqual(evaluator.metric_count, 5, 'Less than 5 metrics present')
+        print(str(evaluator.metric_count) +'/'+str(evaluator.total_metrics))
+        # TODO - what is the expected ratio?
+        self.assertGreaterEqual(evaluator.metric_count, evaluator.total_metrics/10, 'Less than 10% of metadata')
 
 
 

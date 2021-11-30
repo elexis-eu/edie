@@ -31,12 +31,14 @@ class LicenseEvaluator(MetadataMetric):
             self.license = metadata.license
             self.license_info_present = True
 
-class MetadataQualityEvaluator(MetadataMetric):
+class MetadataQuantityEvaluator(MetadataMetric):
     def __init__(self):
         self.metric_count = 0
+        self.total_metrics = 0
 
     def analyze(self, metadata):
         for el in vars(metadata):
+            self.total_metrics+=1
             if vars(metadata)[el]!=None:
                 self.metric_count+=1
 

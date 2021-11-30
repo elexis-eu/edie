@@ -74,4 +74,7 @@ class TestParsing(unittest.TestCase):
 }""")
         result = JsonEntry(data)
         self.assertEqual(len(result.errors), 0)
+        self.assertEqual(len(result.senses), 1)
+        self.assertEqual(result.senses[0].definition, "An example OntoLex Entry")
+
 

@@ -17,8 +17,8 @@ class PublisherEvaluator(MetadataMetric):
         self.publisher_info_present = False
 
     def analyze(self, metadata):
-        if metadata.publisher:
-            self.publisher = metadata.publisher
+        if metadata.agent:
+            self.publisher = metadata.agent # TODO
             self.publisher_info_present = True
 
 class LicenseEvaluator(MetadataMetric):

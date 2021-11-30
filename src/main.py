@@ -90,7 +90,9 @@ if __name__ == "__main__":
 
                     offset += LIMIT
                 for entry_metric in entry_metrics:
-                    dict_report.update(entry_metric.result())
+                    if entry_metric.result(): #TODO
+                        print(entry_metric, entry_metric.result())
+                        dict_report.update(entry_metric.result())
 
         except RequestException as e:
             report["available"] = False

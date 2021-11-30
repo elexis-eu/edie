@@ -40,6 +40,17 @@ class MetadataQualityEvaluator(MetadataMetric):
             if vars(metadata)[el]!=None:
                 self.metric_count+=1
 
+class RecencyEvaluator(MetadataMetric):
+    def __init__(self):
+        self.recency = None
+
+    def analyze(self, metadata):
+        if metadata.issued:
+            self.recency = 2021-int(metadata.issued.year)
+        elif metadata.created:
+            self.recency = 2021 - int(metadata.created.year)
+
+
 class EntryMetric(ABC):
     """Abstract class for a metric that accumulates information by iterating
        over the entries in a dictionary"""

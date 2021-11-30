@@ -12,7 +12,7 @@ import unittest
 import json
 
 from src.edie.model import JsonEntry, Metadata, Entry
-from src.metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQualityEvaluator
+from src.metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQualityEvaluator, RecencyEvaluator
 
 
 class TestEntry(unittest.TestCase):
@@ -68,24 +68,25 @@ class TestMetadata(unittest.TestCase):
         entry_json = json.load(f)
         f.close()
 
-        entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(entry_json)
 
 
         evaluator = PublisherEvaluator()
-        evaluator.analyze(entry)
+        evaluator.analyze(metadata_entry)
         self.assertTrue(evaluator.publisher_info_present, 'Publisher info missing')
 
         evaluator = LicenseEvaluator()
-        evaluator.analyze(entry)
+        evaluator.analyze(metadata_entry)
         self.assertTrue(evaluator.license_info_present, 'License info missing')
 
+        evaluator = RecencyEvaluator()
+        evaluator.analyze(metadata_entry)
+        self.assertIsNotNone(evaluator.recency, 'Cannot estimate recency')
+        self.assertLessEqual(evaluator.recency, 50, 'Dictionary is older than 50 years')
+
         evaluator = MetadataQualityEvaluator()
-        evaluator.analyze(entry)
+        evaluator.analyze(metadata_entry)
         self.assertGreaterEqual(evaluator.metric_count, 5, 'Less than 5 metrics present')
-
-
-
-
 
 
 

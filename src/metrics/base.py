@@ -61,6 +61,8 @@ class NumberOfSensesEvaluator(EntryMetric):
     def result(self):
         if self.entry_count > 0:
             return {"sensesPerEntry": self.senses_count / self.entry_count}
+        else:
+            return {}
 
     def reset(self):
         self.senses_count = 0

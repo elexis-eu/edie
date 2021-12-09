@@ -11,8 +11,8 @@ import sys
 import unittest
 import json
 
-from src.elexis_client.model import JsonEntry
-from src.metrics.base import NumberOfSensesEvaluator, AvgDefinitionLengthEvaluator
+from edie.model import JsonEntry
+from metrics.base import NumberOfSensesEvaluator, AvgDefinitionLengthEvaluator
 
 
 class TestEntry(unittest.TestCase):
@@ -90,7 +90,7 @@ class TestAverageDefinitionLength(unittest.TestCase):
 class TestNumberOfSenses(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.numberOfSensesEvaluator: NumberOfSensesEvaluator = NumberOfSensesEvaluator()
 
     def tearDown(self):
         pass

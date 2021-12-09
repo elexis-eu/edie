@@ -1,5 +1,6 @@
 import re
 import dateutil.parser
+from enum import Enum
 
 
 class Metadata(object):
@@ -233,9 +234,20 @@ class Metadata(object):
 
 
 class Agent(object):
-    def __init__(self, obj):
+    def __init__(self, json):
         self.errors = []
-        # TODO
+        if "name" in json:
+            self.name = json["name"]
+        else:
+            self.name = None
+        if "email" in json:
+            self.email = json["email"]
+        else:
+            self.email = None
+        if "url" in json:
+            self.url = json["url"]
+        else:
+            self.url = None
 
 
 class Entry(object):
@@ -291,7 +303,8 @@ class Entry(object):
                               "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
                               "PUNCT", "SCONJ", "SYM", "VERB", "X"]
                         for p in json["partOfSpeech"])):
-                self.part_of_speech = json["partOfSpeech"]
+                self.part_of_speech = [parse_part_of_speech(p, self.errors)
+                        for p in json["partOfSpeech"]]
             else:
                 self.errors.append("Part of speech value was invalid: "
                                    + str(json["partOfSpeech"]))
@@ -314,6 +327,239 @@ class Entry(object):
 class JsonEntry(object):
     def __init__(self, json):
         self.errors = []
-        self.other_form = []
-        self.senses = json['senses']
-        # TODO
+        if "@type" in json:
+            if json["@type"] in ["LexicalEntry", "Word", 
+                    "MultiWordExpression", "Affix"]:
+                self.type = json["@type"]
+            else:
+                self.errors.append("Invalid entry type: " +
+                        str(json["@type"]))
+                self.type = None
+        else:
+            self.errors.append("No type of entry")
+            self.type = None
+
+        if "canonicalForm" in json:
+            if isinstance(json["canonicalForm"], dict):
+                self.canonical_form = JsonForm(json["canonicalForm"])
+                self.errors.extend(self.canonical_form.errors)
+            else:
+                self.errors.append("Canonical form was not an object but" +
+                        str(json["canonicalForm"]))
+                self.canonical_form = None
+        else:
+            self.errors.append("No canonical form")
+            self.canonical_form = None
+
+        if "partOfSpeech" in json:
+            if json["partOfSpeech"] in ["adjective", "adposition", "adverb",
+                    "auxiliary", "coordinatingConjunction", "determiner", 
+                    "interjection", "commonNoun", "numeral", "particle", "pronoun",
+                    "properNoun", "punctuation", "subordinatingConjunction", 
+                    "symbol", "verb", "other"]:
+                self.part_of_speech = parse_part_of_speech(json["partOfSpeech"], 
+                        self.errors)
+            else:
+                self.errors.append("Bad part of speech value: " + 
+                        str(json["partOfSpeech"]))
+                self.part_of_speech = None
+        else:
+            self.part_of_speech = None
+
+        if "otherForm" in json:
+            if (isinstance(json["otherForm"], list) and
+                    all(isinstance(form, dict) for form in json["otherForm"])):
+                self.other_form = [JsonForm(form) for form in
+                        json["otherForm"]]
+                for form in self.other_form:
+                    self.errors.extend(form.errors)
+            else:
+                self.errors.append("Bad value for other form: " +
+                        str(json["otherForm"]))
+                self.other_form = []
+        else:
+            self.other_form = []
+
+        if "morphologicalPattern" in json:
+            if isinstance(json["morphologicalPattern"], str):
+                self.morphological_pattern = json["morphologicalPattern"]
+            else:
+                self.errors.append("Bad morphological pattern: " +
+                        str(json["morphologicalPattern"]))
+                self.morphological_pattern = None
+        else:
+            self.morphological_pattern = None
+
+        if "etymology" in json:
+            if isinstance(json["etymology"], str):
+                self.etymology = json["etymology"]
+            else:
+                self.errors.append("Bad etymology: " +
+                        str(json["etymology"]))
+                self.etymology = None
+        else:
+            self.etymology = None
+
+        if "senses" in json:
+            if (isinstance(json["senses"], list) and
+                    all(isinstance(sense, dict) for sense in json["senses"])):
+                self.senses = [JsonSense(sense) for sense in json["senses"]]
+            else:
+                self.errors.append("Bad senses: " +
+                        str(json["senses"]))
+                self.senses = []
+        else:
+            self.errors.append("Entry has no senses")
+            self.senses = []
+
+        if "usage" in json:
+            if isinstance(json["usage"], str):
+                self.usage = json["usage"]
+            else:
+                self.errors.append("Bad usage: " +
+                        str(json["usage"]))
+                self.usage = None
+        else:
+            self.usage = None
+
+
+class JsonForm(object):
+    def __init__(self, json):
+        self.errors = []
+        if "writtenRep" in json:
+            if isinstance(json["writtenRep"], str):
+                self.written_rep = json["writtenRep"]
+            else:
+                self.errors.append("Bad written rep: " +
+                        str(json["writtenRep"]))
+                self.written_rep = None
+        else:
+            self.written_rep = None
+
+        if "phoneticRep" in json:
+            if isinstance(json["phoneticRep"], str):
+                self.phonetic_rep = json["phoneticRep"]
+            else:
+                self.errors.append("Bad phonetic rep: " +
+                        str(json["phoneticRep"]))
+                self.phonetic_rep = None
+        else:
+            self.phonetic_rep = None
+
+
+class JsonSense(object):
+    def __init__(self, json):
+        self.errors = []
+        if "definition" in json:
+            if isinstance(json["definition"], str):
+                self.definition = json["definition"]
+            else:
+                self.errors.append("Bad definition: " +
+                        str(json["definition"]))
+                self.definition = None
+        else:
+            self.definition = None
+
+        if "reference" in json:
+            if isinstance(json["reference"], str):
+                self.reference = json["reference"]
+            else:
+                self.errors.append("Bad reference: " +
+                        str(json["reference"]))
+                self.reference = None
+        else:
+            self.phonetic_rep = None
+
+
+class PartOfSpeech(Enum):
+    ADJECTIVE = 1
+    ADPOSITION = 2
+    ADVERB = 3
+    AUXILIARY = 4
+    COORDINATING_CONJUNCTION = 5
+    DETERMINER = 6
+    INTERJECTION = 7
+    COMMON_NOUN = 8
+    NUMERAL = 9
+    PARTICLE = 10
+    PRONOUN = 11
+    PROPER_NOUN = 12
+    PUNCTUATION = 13
+    SUBORDINATING_CONJUNCTION = 14
+    SYMBOL = 15
+    VERB = 16
+    OTHER = 17
+
+def parse_part_of_speech(val, errors = None):
+    if val == "ADJ":
+        return PartOfSpeech.ADJECTIVE
+    elif  val == "ADP":
+        return PartOfSpeech.ADPOSITION
+    elif val == "ADV":
+        return PartOfSpeech.ADVERB
+    elif val == "AUX":
+        return PartOfSpeech.AUXILIARY
+    elif val == "CCONJ":
+        return PartOfSpeech.COORDINATING_CONJUNCTION
+    elif val == "DET":
+        return PartOfSpeech.DETERMINER
+    elif val == "INTJ":
+        return PartOfSpeech.INTERJECTION
+    elif val == "NOUN":
+        return PartOfSpeech.COMMON_NOUN
+    elif val == "NUM":
+        return PartOfSpeech.NUMERAL
+    elif val == "PART":
+        return PartOfSpeech.PARTICLE
+    elif val == "PRON":
+        return PartOfSpeech.PRONOUN
+    elif val == "PROPN":
+        return PartOfSpeech.PROPER_NOUN
+    elif val == "PUNCT":
+        return PartOfSpeech.PUNCTUATION
+    elif val == "SCONJ":
+        return PartOfSpeech.SUBORDINATING_CONJUNCTION
+    elif val == "SYM":
+        return PartOfSpeech.SYMBOL
+    elif val == "VERB":
+        return PartOfSpeech.VERB
+    elif val == "X":
+        return PartOfSpeech.OTHER
+    elif val == "adjective":
+        return PartOfSpeech.ADJECTIVE
+    elif val == "adposition":
+        return PartOfSpeech.ADPOSITION
+    elif val == "adverb":
+        return PartOfSpeech.ADVERB
+    elif val == "auxiliary":
+        return PartOfSpeech.AUXILIARY
+    elif val == "coordinatingConjunction":
+        return PartOfSpeech.COORDINATING_CONJUNCTION
+    elif val == "determiner":
+        return PartOfSpeech.DETERMINER
+    elif val == "interjection":
+        return PartOfSpeech.INTERJECTION
+    elif val == "commonNoun":
+        return PartOfSpeech.COMMON_NOUN
+    elif val == "numeral":
+        return PartOfSpeech.NUMERAL
+    elif val == "particle":
+        return PartOfSpeech.PARTICLE
+    elif val == "pronoun":
+        return PartOfSpeech.PRONOUN
+    elif val == "properNoun":
+        return PartOfSpeech.PROPER_NOUN
+    elif val == "punctuation":
+        return PartOfSpeech.PUNCTUATION
+    elif val == "subordinatingConjunction":
+        return PartOfSpeech.SUBORDINATING_CONJUNCTION
+    elif val == "symbol":
+        return PartOfSpeech.SYMBOL
+    elif val == "verb":
+        return PartOfSpeech.VERB
+    elif val == "other":
+        return PartOfSpeech.OTHER
+    else:
+        if errors:
+            errors.append("Invalid part of speech value: " + str(val))
+        return None

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.elexis_client.model import Entry, JsonEntry
+from edie.model import Entry, JsonEntry
 
 
 class MetadataMetric(ABC):
@@ -61,6 +61,8 @@ class NumberOfSensesEvaluator(EntryMetric):
     def result(self):
         if self.entry_count > 0:
             return {"sensesPerEntry": self.senses_count / self.entry_count}
+        else:
+            return {}
 
     def reset(self):
         self.senses_count = 0
@@ -77,7 +79,7 @@ class DefinitionOfSenseEvaluator(object):
         self.senses_count += len(entry.senses)
         self.entry_count += 1
         for sense in entry.senses:
-            if 'definition' in sense:
+            if sense.definition is not None:
                 self.definition_count += 1
 
     def reset(self):

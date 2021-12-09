@@ -41,8 +41,15 @@ if __name__ == "__main__":
                            help="Endpoint to query")
     argparser.add_argument("-m", nargs="+",
                            help="List of metrics to evaluate")
+    argparser.add_argument("--max-entries",
+                           help="Maximum number of entries to evaluate")
 
     args = argparser.parse_args()
+    if args.max_entries:
+        max_entries = int(args.max_entries)
+    else:
+        max_entries = float('inf')
+
     if args.server:
         print("TODO: implement server mode")
         sys.exit(-1)
@@ -57,7 +64,11 @@ if __name__ == "__main__":
             dictionaries = args.d if args.d else dictionary_list
             report["dictionaries"] = {}
 
+            sys.stderr.write("Evaluating %d dictionaries\n" % len(dictionaries))
+
             for dictionary in dictionaries:
+                sys.stderr.write("Evaluating %s" % dictionary)
+
                 for entry_metric in entry_metrics:
                     entry_metric.reset()
 
@@ -73,12 +84,15 @@ if __name__ == "__main__":
                         dict_report.update(metadata_metric.apply(metadata))
 
                 offset = 0
-                while True:
+                while offset <= max_entries:
                     entries = api_instance.list(dictionary, limit=LIMIT, offset=offset)
                     if not entries:
                         break
 
                     for entry in entries:
+                        offset += 1
+                        if offset > max_entries:
+                            break
                         entry = Entry(entry)
                         if entry.errors:
                             if "entryErrors" not in dict_report:
@@ -88,7 +102,13 @@ if __name__ == "__main__":
                             entry_report(api_instance, dictionary, entry,
                                          dict_report)
 
-                    offset += LIMIT
+                    sys.stderr.write(".")
+                    sys.stderr.flush()
+
+                    if len(entries) < LIMIT:
+                        break
+                
+                sys.stderr.write("\n")
                 for entry_metric in entry_metrics:
                     if entry_metric.result(): #TODO
                         print(entry_metric, entry_metric.result())

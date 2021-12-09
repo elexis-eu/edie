@@ -33,4 +33,7 @@ class ApiClient(object):
         return requests.get(url).json()
 
     def json(self, dictionary, id):
-        return requests.get(f"{self.endpoint}/json/{dictionary}/{id}").json()
+        headers = {'Accept': 'application/json'} 
+        r = requests.get(f"{self.endpoint}json/{dictionary}/{id}",
+                headers=headers)
+        return r.json()

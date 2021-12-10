@@ -1,6 +1,6 @@
 import argparse
 import sys
-from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator
+from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator
 import json
 from edie.api import ApiClient
 from edie.model import Metadata, Entry, JsonEntry
@@ -10,7 +10,7 @@ LIMIT = 100
 
 metadata_metrics = []
 
-entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator()]
+entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator()]
 
 
 def list_dictionaries(api_instance):

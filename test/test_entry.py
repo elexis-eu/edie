@@ -12,7 +12,7 @@ import unittest
 import json
 
 from edie.model import JsonEntry, Metadata, Entry, JsonApiResponse
-from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiEvaluator, , DefinitionOfSenseEvaluator
+from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiEvaluator, DefinitionOfSenseEvaluator
 
 class TestEntry(unittest.TestCase):
     """Entry unit test stubs"""

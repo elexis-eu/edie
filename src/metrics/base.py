@@ -131,3 +131,31 @@ class NumberOfSensesEvaluator(EntryMetric):
     def reset(self):
         self.senses_count = 0
         self.entry_count = 0
+
+
+class DefinitionOfSenseEvaluator(object):
+    def __init__(self):
+        self.entry_count = 0
+        self.definition_count = 0
+        self.senses_count = 0
+
+    def accumulate(self, entry: JsonEntry):
+        self.senses_count += len(entry.senses)
+        self.entry_count += 1
+        for sense in entry.senses:
+            if sense.definition is not None:
+                self.definition_count += 1
+
+    def reset(self):
+        self.entry_count = 0
+        self.definition_count = 0
+        self.senses_count = 0
+
+    def result(self):
+        result = {}
+        if self.senses_count > 0:
+            result.update({"DefinitionPerSense": self.definition_count / self.senses_count})
+        if self.entry_count > 0:
+            result.update({"DefinitionPerEntry": self.definition_count / self.entry_count})
+        return result
+

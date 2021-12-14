@@ -324,6 +324,16 @@ class Entry(object):
         else:
             self.formats = []
 
+class JsonApiResponse(object):
+    def __init__(self, json):
+        self.errors = []
+        self.dictionaries = {}
+
+        if "dictionaries" in json:
+            for d in json['dictionaries']:
+                self.dictionaries[d["id"]]=d
+
+
 
 class JsonEntry(object):
     def __init__(self, json):

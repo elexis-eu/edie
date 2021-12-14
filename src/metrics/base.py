@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.edie.model import Entry, JsonEntry
+from edie.model import Entry, JsonEntry
 
 
 class MetadataMetric(ABC):
@@ -52,6 +52,28 @@ class RecencyEvaluator(MetadataMetric):
         elif metadata.created:
             self.recency = 2021 - int(metadata.created.year)
 
+
+class ApiMetric(ABC):
+    """Abstract class for a metric that depends on only the metadata"""
+
+    @abstractmethod
+    def analyze(self, api_response):
+        pass
+
+class ApiEvaluator(ApiMetric):
+    def __init__(self):
+        self.dict_count = 0
+        self.languages = {}
+
+    def analyze(self, api_response):
+        for el in api_response.dictionaries:
+            self.dict_count+=1
+            if 'language' in api_response.dictionaries[el]:
+                lang = api_response.dictionaries[el]['language']
+                if lang not in self.languages:
+                    self.languages[lang]=1
+                else:
+                    self.languages[lang]+=1
 
 class EntryMetric(ABC):
     """Abstract class for a metric that accumulates information by iterating

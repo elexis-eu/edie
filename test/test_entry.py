@@ -11,8 +11,8 @@ import sys
 import unittest
 import json
 
-from src.edie.model import JsonEntry, Metadata, Entry
-from src.metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator
+from edie.model import JsonEntry, Metadata, Entry, JsonApiResponse
+from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiEvaluator
 
 
 class TestEntry(unittest.TestCase):
@@ -54,7 +54,6 @@ class TestNumberOfSenses(unittest.TestCase):
         self.assertEqual(evaluator.entry_count, 1)
 
 class TestMetadata(unittest.TestCase):
-
     def setUp(self):
         self.publisherEvaluator: PublisherEvaluator = PublisherEvaluator()
         self.licenseEvaluator: LicenseEvaluator = LicenseEvaluator()
@@ -89,6 +88,33 @@ class TestMetadata(unittest.TestCase):
         print(str(evaluator.metric_count) +'/'+str(evaluator.total_metrics))
         # TODO - what is the expected ratio?
         self.assertGreaterEqual(evaluator.metric_count, evaluator.total_metrics/10, 'Less than 10% of metadata')
+
+class TestMetadataApi(unittest.TestCase):
+    def setUp(self):
+        self.apiEvaluator : ApiEvaluator = ApiEvaluator()
+
+    def tearDown(self):
+        pass
+
+    def testEntry(self):
+        f = open("test/data/lexonomy.json")
+        entry_json = json.load(f)
+        f.close()
+
+        api_entry: JsonApiResponse = JsonApiResponse(entry_json)
+        evaluator = ApiEvaluator()
+
+        evaluator.analyze(api_entry)
+
+        print('dictionary count ', evaluator.dict_count)
+        print('languages count ', len(evaluator.languages))
+        for lan in evaluator.languages:
+            print(lan, evaluator.languages[lan])
+
+        self.assertGreaterEqual(evaluator.dict_count,1)
+
+        #self.assertEqual(evaluator.senses_count, 1)
+        #self.assertEqual(evaluator.entry_count, 1)
 
 
 

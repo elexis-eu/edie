@@ -298,15 +298,19 @@ class Entry(object):
             self.id = None
 
         if "partOfSpeech" in json:
-            if (isinstance(json["partOfSpeech"], list) and
-                    all(p in ["ADJ", "ADP", "ADV", "AUX", "CCONJ",
+            if isinstance(json["partOfSpeech"], list):
+                if all(p in ["ADJ", "ADP", "ADV", "AUX", "CCONJ",
                               "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
                               "PUNCT", "SCONJ", "SYM", "VERB", "X"]
-                        for p in json["partOfSpeech"])):
-                self.part_of_speech = [parse_part_of_speech(p, self.errors)
-                        for p in json["partOfSpeech"]]
+                        for p in json["partOfSpeech"]):
+                    self.part_of_speech = [parse_part_of_speech(p, self.errors)
+                            for p in json["partOfSpeech"]]
+                else:
+                    self.errors.append("Part of speech value was invalid: "
+                                   + str(json["partOfSpeech"]))
+                    self.part_of_speech = None
             else:
-                self.errors.append("Part of speech value was invalid: "
+                self.errors.append("Part of speech value was not a list: "
                                    + str(json["partOfSpeech"]))
                 self.part_of_speech = None
         else:

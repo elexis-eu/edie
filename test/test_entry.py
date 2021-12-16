@@ -12,7 +12,7 @@ import unittest
 import json
 
 from edie.model import JsonEntry
-from metrics.base import NumberOfSensesEvaluator, AvgDefinitionLengthEvaluator
+from metrics.base import NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, AvgDefinitionLengthEvaluator
 
 
 class TestEntry(unittest.TestCase):
@@ -29,6 +29,60 @@ class TestEntry(unittest.TestCase):
         # FIXME: construct object with mandatory attributes with example values
         # model = Entry()  # noqa: E501
         pass
+
+
+class TestDefinitionOfSenses(unittest.TestCase):
+    def setUp(self) -> None:
+        pass
+
+    def tearDown(self) -> None:
+        pass
+
+    def test_definition_of_sense_init(self) -> None:
+        evaluator = DefinitionOfSenseEvaluator()
+
+        self.assertEqual(evaluator.senses_count, 0)
+        self.assertEqual(evaluator.definition_count, 0)
+        self.assertEqual(evaluator.entry_count, 0)
+
+    def test_reset(self) -> None:
+        evaluator = DefinitionOfSenseEvaluator()
+        f = open("test/data/entries.json")
+        entry_json = json.load(f)
+        entry: JsonEntry = JsonEntry(entry_json)
+        evaluator.accumulate(entry)
+
+        evaluator.reset()
+
+        self.assertEqual(evaluator.senses_count, 0)
+        self.assertEqual(evaluator.definition_count, 0)
+        self.assertEqual(evaluator.entry_count, 0)
+
+    def test_result(self) -> None:
+        evaluator = DefinitionOfSenseEvaluator()
+        f = open("test/data/entries.json")
+        entry_json = json.load(f)
+        entry: JsonEntry = JsonEntry(entry_json)
+        evaluator.accumulate(entry)
+
+        result = evaluator.result()
+
+        self.assertEqual(result['DefinitionPerSense'], 1.0)
+        self.assertEqual(result['DefinitionPerEntry'], 1.0)
+
+
+
+    def test_entry(self) -> None:
+            f = open("test/data/entries.json")
+            entry_json = json.load(f)
+            entry: JsonEntry = JsonEntry(entry_json)
+            evaluator = DefinitionOfSenseEvaluator()
+
+            evaluator.accumulate(entry)
+
+            self.assertEqual(evaluator.entry_count, 1)
+            self.assertEqual(evaluator.senses_count, 1)
+            self.assertEqual(evaluator.definition_count, 1)
 
 
 class TestAverageDefinitionLength(unittest.TestCase):
@@ -86,6 +140,7 @@ class TestAverageDefinitionLength(unittest.TestCase):
         self.assertEqual(evaluator.senses_count, 0)
         self.assertEqual(evaluator.total_definition_token_length, 0)
         self.assertEqual(evaluator.total_definition_char_length, 0)
+
 
 class TestNumberOfSenses(unittest.TestCase):
 

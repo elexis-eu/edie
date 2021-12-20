@@ -43,6 +43,8 @@ if __name__ == "__main__":
                            help="List of metrics to evaluate")
     argparser.add_argument("--max-entries",
                            help="Maximum number of entries to evaluate")
+    argparser.add_argument("--api-key",
+                            help="The API KEY to use")
 
     args = argparser.parse_args()
     if args.max_entries:
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         endpoint = args.e if args.e else "http://localhost:8000/"
         report = {"endpoint": endpoint}
 
-        api_instance = ApiClient(endpoint)
+        api_instance = ApiClient(endpoint, args.api_key)
         try:
             dictionary_list = list_dictionaries(api_instance)
             report["available"] = True

@@ -4,7 +4,9 @@ from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, Definitio
 import json
 from edie.api import ApiClient
 from edie.model import Metadata, Entry, JsonEntry
+from edie.tei import convert_tei
 from requests.exceptions import RequestException
+from xml.etree import ElementTree
 
 LIMIT = 100
 
@@ -27,9 +29,20 @@ def entry_report(api_instance, dictionary, entry, dict_report):
         else:
             for entry_metric in entry_metrics:
                 entry_metric.accumulate(json_entry)
+    elif "tei" in entry.formats:
+        tei_entry = api_instance.tei(dictionary, entry.id)
+        errors = []
+        entries = convert_tei(tei_entry, errors, entry.id)
+        if errors:
+            if "entryErrors" not in dict_report:
+                dict_report["entryErrors"] = []
+            dict_report["entryErrors"].extend(errors)
+        else:
+            for entry in entries:
+                for entry_metric in entry_metrics:
+                    entry_metric.accumulate(entry)
     else:
         print("TODO: non-JSON entries")
-
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser("ELEXIS Dictionary Evaluation Tool (EDiE)")

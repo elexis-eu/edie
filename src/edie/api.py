@@ -4,19 +4,29 @@ from urllib.parse import urlencode
 class ApiClient(object):
     """A client for the ELEXIS API"""
 
-    def __init__(self, endpoint):
+    def __init__(self, endpoint, api_key):
         if not endpoint.endswith("/"):
             self.endpoint = endpoint + "/"
         else:
             self.endpoint = endpoint
+        self.api_key = api_key
 
+    def __get_header(self):
+        if self.api_key:
+            return {"X-API-KEY": self.api_key}
+        else:
+            return {}
 
     def dictionaries(self):
-        return requests.get(self.endpoint + "dictionaries").json()
+        headers = self.__get_header()
+        return requests.get(self.endpoint + "dictionaries",
+                headers=headers).json()
 
     
     def about(self, dictionary):
-        return requests.get(self.endpoint + "about/" + dictionary).json()
+        headers = self.__get_header()
+        return requests.get(self.endpoint + "about/" + dictionary,
+                headers=headers).json()
 
 
     def list(self, dictionary, limit=None, offset=None):
@@ -30,10 +40,12 @@ class ApiClient(object):
             url = f"{self.endpoint}list/{dictionary}?{qstr}"
         else:
             url = f"{self.endpoint}list/{dictionary}"
-        return requests.get(url).json()
+        headers = self.__get_header()
+        return requests.get(url, headers=headers).json()
 
     def json(self, dictionary, id):
-        headers = {'Accept': 'application/json'} 
+        headers = self.__get_header()
+        headers['Accept'] = 'application/json'
         r = requests.get(f"{self.endpoint}json/{dictionary}/{id}",
                 headers=headers)
         return r.json()

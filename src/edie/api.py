@@ -23,13 +23,13 @@ class ApiClient(object):
                 headers=headers).json()
 
     
-    def about(self, dictionary):
+    def about(self, dictionary_id):
         headers = self.__get_header()
-        return requests.get(self.endpoint + "about/" + dictionary,
+        return requests.get(self.endpoint + "about/" + dictionary_id,
                 headers=headers).json()
 
 
-    def list(self, dictionary, limit=None, offset=None):
+    def list(self, dictionary_id, limit=None, offset=None):
         q = {}
         if limit:
             q["limit"] = limit
@@ -37,16 +37,16 @@ class ApiClient(object):
             q["offset"] = offset
         qstr = urlencode(q)
         if qstr:
-            url = f"{self.endpoint}list/{dictionary}?{qstr}"
+            url = f"{self.endpoint}list/{dictionary_id}?{qstr}"
         else:
-            url = f"{self.endpoint}list/{dictionary}"
+            url = f"{self.endpoint}list/{dictionary_id}"
         headers = self.__get_header()
         return requests.get(url, headers=headers).json()
 
-    def json(self, dictionary, id):
+    def json(self, dictionary_id, entry_id):
         headers = self.__get_header()
         headers['Accept'] = 'application/json'
-        r = requests.get(f"{self.endpoint}json/{dictionary}/{id}",
+        r = requests.get(f"{self.endpoint}json/{dictionary_id}/{entry_id}",
                 headers=headers)
         return r.json()
 

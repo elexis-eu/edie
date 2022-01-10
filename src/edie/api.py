@@ -49,23 +49,3 @@ class ApiClient(object):
         r = requests.get(f"{self.endpoint}json/{dictionary_id}/{entry_id}",
                 headers=headers)
         return r.json()
-
-class LexonomyApiClient(object):
-    def __init__(self, endpoint, username, password):
-        if not endpoint.endswith("/"):
-            self.endpoint = endpoint + "/"
-        else:
-            self.endpoint = endpoint
-        self.data = {'email':username, 'apikey':password}
-
-
-    def list_dictionaries(self):
-        return requests.post(self.endpoint + "listDict", json=self.data).json()
-
-    def list_dictionaries_lang(self, lang):
-        data = self.data
-        data['lang']=lang
-        return requests.post(self.endpoint + "listDict", json=self.data).json()
-
-lexonomyApi = LexonomyApiClient("https://lexonomy.elex.is/api/", 'rambousek+elexis@gmail.com','GXCQJ6S2FZUATM5Z2S0MGZ7XOMXKUFNP')
-print(lexonomyApi.list_dictionaries_lang('sl'))

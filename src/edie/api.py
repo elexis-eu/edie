@@ -1,6 +1,7 @@
 import requests
 from urllib.parse import urlencode
 
+
 class ApiClient(object):
     """A client for the ELEXIS API"""
 
@@ -20,14 +21,16 @@ class ApiClient(object):
     def dictionaries(self):
         headers = self.__get_header()
         return requests.get(self.endpoint + "dictionaries",
-                headers=headers).json()
+                            headers=headers).json()
 
-    
     def about(self, dictionary_id):
         headers = self.__get_header()
-        return requests.get(self.endpoint + "about/" + dictionary_id,
-                headers=headers).json()
+        response = requests.get(self.endpoint + "about/" + dictionary_id,
+                                headers=headers)
+        if response.status_code != 200:
+            raise response.raise_for_status()
 
+        return response.json()
 
     def list(self, dictionary_id, limit=None, offset=None):
         q = {}
@@ -47,5 +50,12 @@ class ApiClient(object):
         headers = self.__get_header()
         headers['Accept'] = 'application/json'
         r = requests.get(f"{self.endpoint}json/{dictionary_id}/{entry_id}",
-                headers=headers)
+                         headers=headers)
         return r.json()
+
+    def tei(self, dictionary_id, entry_id):
+        headers = self.__get_header()
+        headers['Accept'] = "text/xml"
+        r = requests.get(f"{self.endpoint}json/{dictionary_id}/{entry_id}",
+                         headers=headers)
+        return r.content

@@ -12,7 +12,6 @@ class TestParsing(unittest.TestCase):
     def tearDown(self):
         pass
 
-
     def testReadAbout(self):
         data = json.loads("""{
   "release": "PUBLIC",
@@ -76,5 +75,3 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(len(result.errors), 0)
         self.assertEqual(len(result.senses), 1)
         self.assertEqual(result.senses[0].definition, "An example OntoLex Entry")
-
-

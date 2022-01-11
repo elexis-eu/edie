@@ -49,3 +49,10 @@ class ApiClient(object):
         r = requests.get(f"{self.endpoint}json/{dictionary_id}/{entry_id}",
                 headers=headers)
         return r.json()
+
+    def tei(self, dictionary_id, entry_id):
+        headers = self.__get_header()
+        headers['Accept'] = "text/xml"
+        r = requests.get(f"{self.endpoint}json/{dictionary_id}/{entry_id}",
+                headers=headers)
+        return r.content

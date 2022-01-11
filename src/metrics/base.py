@@ -113,6 +113,45 @@ class ApiMetric(ABC):
     def analyze(self, api_response):
         pass
 
+
+class LexonomyAboutDictEvaluator(ApiMetric):
+    def __init__(self):
+        self.metrics = 0
+        self.target_language = None
+        self.source_language = None
+
+    def analyze(self, api_response):
+        if api_response.source_language!='null':
+            self.source_language = api_response.source_language
+            
+        if api_response.target_language!='null':
+            self.target_language = api_response.target_language
+
+        for el in vars(api_response):
+            if vars(api_response)[el] != None:
+                self.metrics += 1
+
+        
+    def reset(self):
+        self.metrics = 0
+        self.target_language = None
+        self.source_language = None
+    
+    def result(self):
+        result = {}
+        if self.source_language:
+            result['source language']=self.source_language
+        if self.target_language:
+            result['target language']=self.target_language
+        if self.metrics>0:
+            result['total metric count'] = self.metrics
+
+        return result
+
+        
+            
+
+
 class ApiMetadataResponseEvaluator(ApiMetric):
     def __init__(self):
         self.dict_count = 0

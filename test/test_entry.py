@@ -12,7 +12,7 @@ import unittest
 import json
 
 from edie.model import JsonEntry, Metadata, Entry, JsonApiResponse
-from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator
+from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, LexonomyAboutDictEvaluator
 
 class TestEntry(unittest.TestCase):
     """Entry unit test stubs"""
@@ -314,8 +314,92 @@ class TestMetadataQuantity(unittest.TestCase):
         self.assertGreaterEqual(evaluator.metric_count, evaluator.total_metrics / 10, 'Less than 10% of metadata')
 
 
-class TestMetadataApiResponse(unittest.TestCase):
+from edie.api import ApiClient
+api = ApiClient(endpoint='http://lexonomy.elex.is/',api_key='GXCQJ6S2FZUATM5Z2S0MGZ7XOMXKUFNP')
 
+class TestLexonomyAboutDict(unittest.TestCase):
+    def setUp(self) -> None:
+        pass
+
+    def tearDown(self) -> None:
+        pass
+
+    def test_lexonomy_about_dict_init(self) -> None:
+        evaluator = LexonomyAboutDictEvaluator()
+        self.assertEqual(evaluator.metrics, 0)
+        self.assertIsNone(evaluator.source_language, 0)
+        self.assertIsNone(evaluator.target_language, 0)
+
+    def test_entry(self):
+        f = open("test/data/dictionaries.json")
+        entry_json = json.load(f)
+        f.close()
+
+        for dict in entry_json['dictionaries'][:10]:
+            about = api.about(dictionary_id=dict)
+
+            metadata_entry: Metadata = Metadata(about)
+
+            evaluator = LexonomyAboutDictEvaluator()
+            evaluator.analyze(metadata_entry)
+            # print(evaluator.result())
+
+            try:
+                self.assertIsNotNone(evaluator.source_language,msg='missing source language '+dict)
+                self.assertIsNotNone(evaluator.target_language,msg='missing target language '+dict)
+                self.assertGreater(evaluator.metrics,0)
+
+            except:
+                print('assertion failed')
+
+
+    def test_result(self):
+        f = open("test/data/dictionaries.json")
+        entry_json = json.load(f)
+        f.close()
+
+        for dict in entry_json['dictionaries'][:10]:
+            about = api.about(dictionary_id=dict)
+
+            metadata_entry: Metadata = Metadata(about)
+
+            evaluator = LexonomyAboutDictEvaluator()
+            evaluator.analyze(metadata_entry)
+            result = evaluator.result()
+
+            self.assertIsNotNone(result['source language'])
+            self.assertIsNotNone(result['target language'])
+            self.assertIsNotNone(result['total metric count'])
+
+            # print(evaluator.result())
+
+    def test_reset(self):
+        f = open("test/data/dictionaries.json")
+        entry_json = json.load(f)
+        f.close()
+
+        for dict in entry_json['dictionaries'][:10]:
+            about = api.about(dictionary_id=dict)
+
+            metadata_entry: Metadata = Metadata(about)
+
+            evaluator = LexonomyAboutDictEvaluator()
+            evaluator.analyze(metadata_entry)
+
+            evaluator.reset()
+
+            self.assertEqual(evaluator.metrics, 0)
+            self.assertIsNone(evaluator.source_language, 0)
+            self.assertIsNone(evaluator.target_language, 0)
+
+
+
+
+class TestMetadataApiResponse(unittest.TestCase):
+    '''
+    designed to test the API response for all dictionaries
+    using a sample json from https://lexonomy.elex.is/api/listDict
+    '''
     def setUp(self) -> None:
         pass
 

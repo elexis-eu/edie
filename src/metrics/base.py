@@ -7,9 +7,136 @@ class MetadataMetric(ABC):
     """Abstract class for a metric that depends on only the metadata"""
 
     @abstractmethod
-    def apply(metadata):
+    def analyze(self, metadata):
         pass
 
+    @abstractmethod
+    def result(self):
+        pass
+
+    @abstractmethod
+    def reset(self):
+        pass
+
+
+class PublisherEvaluator(MetadataMetric):
+    def __init__(self):
+        self.publisher = ''
+        self.publisher_info_present = False
+
+    def analyze(self, metadata):
+
+        if metadata.agent:
+            self.publisher = metadata.agent # TODO
+            self.publisher_info_present = True
+
+    def reset(self):
+        self.publisher = ''
+        self.publisher_info_present = False
+
+    def result(self):
+        if self.publisher_info_present:
+            return {"publisher":self.publisher}
+        else:
+            return {}
+
+
+class LicenseEvaluator(MetadataMetric):
+    def __init__(self):
+        self.license = ''
+        self.license_info_present = False
+
+    def analyze(self, metadata):
+        if metadata.license:
+            self.license = metadata.license
+            self.license_info_present = True
+
+    def reset(self):
+        self.license = ''
+        self.license_info_present = False
+
+    def result(self):
+        if self.license_info_present:
+            return {"license":self.license}
+        else:
+            return {}
+
+class MetadataQuantityEvaluator(MetadataMetric):
+    def __init__(self):
+        self.metric_count = 0
+        self.total_metrics = 0
+
+    def analyze(self, metadata):
+        for el in vars(metadata):
+            self.total_metrics+=1
+            if vars(metadata)[el]!=None:
+                self.metric_count+=1
+
+    def reset(self):
+        self.metric_count = 0
+        self.total_metrics = 0
+
+    def result(self):
+        result = {}
+        if self.metric_count>0:
+            result["metric count"]= self.metric_count
+        if self.total_metrics > 0:
+            result["total metrics"] = self.total_metrics
+        return result
+
+
+
+class RecencyEvaluator(MetadataMetric):
+    def __init__(self):
+        self.recency = None
+
+    def analyze(self, metadata):
+        if metadata.issued:
+            self.recency = 2021-int(metadata.issued.year)
+        elif metadata.created:
+            self.recency = 2021 - int(metadata.created.year)
+
+    def reset(self):
+        self.recency = None
+
+    def result(self):
+        if self.recency:
+            return {"recency": self.recency}
+        else:
+            return {}
+
+
+class ApiMetric(ABC):
+    """Abstract class for a metric that depends on only the metadata"""
+
+    @abstractmethod
+    def analyze(self, api_response):
+        pass
+
+class ApiMetadataResponseEvaluator(ApiMetric):
+    def __init__(self):
+        self.dict_count = 0
+        self.languages = {}
+
+    def analyze(self, api_response):
+        for el in api_response.dictionaries:
+            self.dict_count+=1
+            if 'language' in api_response.dictionaries[el]:
+                lang = api_response.dictionaries[el]['language']
+                if lang not in self.languages:
+                    self.languages[lang]=1
+                else:
+                    self.languages[lang]+=1
+
+    def reset(self):
+        self.dict_count = 0
+        self.languages = {}
+
+    def result(self):
+        if self.dict_count>0:
+            return {"dictionary count": self.dict_count}
+        else:
+            return {}
 
 class EntryMetric(ABC):
     """Abstract class for a metric that accumulates information by iterating

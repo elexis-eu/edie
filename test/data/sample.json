@@ -1,0 +1,25 @@
+{
+"release": "PUBLIC",
+"sourceLanguage": "en",
+"targetLanguage": [
+"en",
+"de"
+],
+"genre": [
+"gen"
+],
+"license": "https://creativecommons.org/licenses/by/4.0/",
+"title": "The Human-Readable Name of this resource",
+"creator": [
+{
+"name": "Institute of This Resource",
+"email": "contact@institute.com"
+}
+],
+"publisher": [
+{
+"name": "Publishing Company"
+}
+],
+  "issued": "2001"
+}

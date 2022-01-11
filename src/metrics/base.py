@@ -176,6 +176,41 @@ class FormsPerEntryMetric(EntryMetric):
         self.entry_count = 0
 
 
+class AvgDefinitionLengthEvaluator(EntryMetric):
+    def __init__(self):
+        self.entry_count = 0
+        self.total_definition_char_length = 0
+        self.total_definition_token_length = 0
+        self.senses_count = 0
+
+    def accumulate(self, entry):
+        self.entry_count += 1
+        self.senses_count += len(entry.senses)
+
+        for sense in entry.senses:
+            if sense.definition is not None:
+                self.total_definition_char_length += len(sense.definition)
+                self.total_definition_token_length += len(sense.definition.split())
+
+    def result(self):
+        result = {}
+        if self.entry_count > 0:
+            result.update({"DefinitionLengthPerEntryByCharacter": self.total_definition_char_length / self.entry_count})
+            result.update({"DefinitionLengthPerEntryByToken": self.total_definition_token_length / self.entry_count})
+
+        if self.senses_count > 0:
+            result.update({"DefinitionLengthPerSenseByCharacter": self.total_definition_char_length / self.senses_count})
+            result.update({"DefinitionLengthPerSenseByToken": self.total_definition_token_length / self.senses_count})
+
+        return result
+
+    def reset(self):
+        self.total_definition_char_length = 0
+        self.total_definition_token_length = 0
+        self.entry_count = 0
+        self.senses_count = 0
+
+
 class NumberOfSensesEvaluator(EntryMetric):
     def __init__(self):
         self.senses_count = 0

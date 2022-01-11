@@ -12,7 +12,7 @@ import unittest
 import json
 
 from edie.model import JsonEntry, Metadata, Entry, JsonApiResponse
-from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator
+from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator,AvgDefinitionLengthEvaluator
 
 class TestEntry(unittest.TestCase):
     """Entry unit test stubs"""
@@ -83,6 +83,63 @@ class TestDefinitionOfSenses(unittest.TestCase):
             self.assertEqual(evaluator.entry_count, 1)
             self.assertEqual(evaluator.senses_count, 1)
             self.assertEqual(evaluator.definition_count, 1)
+
+
+class TestAverageDefinitionLength(unittest.TestCase):
+    def setUp(self):
+        self.avgDefSenseEvaluator: AvgDefinitionLengthEvaluator = AvgDefinitionLengthEvaluator()
+
+    def tearDown(self):
+        pass
+
+    def testInit(self):
+        evaluator: AvgDefinitionLengthEvaluator = AvgDefinitionLengthEvaluator()
+
+        self.assertEqual(evaluator.senses_count, 0)
+        self.assertEqual(evaluator.total_definition_char_length, 0)
+        self.assertEqual(evaluator.entry_count, 0)
+        self.assertEqual(evaluator.total_definition_token_length, 0)
+
+    def testTwoEntriesAccumulation(self):
+        with open("test/data/entries_2_senses.json") as f:
+            entry_json = json.load(f)
+            entry: JsonEntry = JsonEntry(entry_json)
+            evaluator = AvgDefinitionLengthEvaluator()
+
+            evaluator.accumulate(entry)
+
+            self.assertEqual(evaluator.senses_count, 2)
+            self.assertGreater(evaluator.total_definition_char_length, 0)
+            self.assertEqual(evaluator.total_definition_token_length, 13)
+            self.assertEqual(evaluator.entry_count, 1)
+
+    def testResult(self):
+        f = open("test/data/entries_2_senses.json")
+        entry_json = json.load(f)
+        entry: JsonEntry = JsonEntry(entry_json)
+        evaluator = AvgDefinitionLengthEvaluator()
+        evaluator.accumulate(entry)
+
+        result = evaluator.result()
+
+        self.assertGreater(result['DefinitionLengthPerSenseByCharacter'], 0.0)
+        self.assertGreater(result['DefinitionLengthPerSenseByToken'], 0.0)
+        self.assertGreater(result['DefinitionLengthPerEntryByCharacter'], 0.0)
+        self.assertGreater(result['DefinitionLengthPerEntryByToken'], 0.0)
+
+    def testReset(self):
+        f = open("test/data/entries_2_senses.json")
+        entry_json = json.load(f)
+        entry: JsonEntry = JsonEntry(entry_json)
+        evaluator = AvgDefinitionLengthEvaluator()
+        evaluator.accumulate(entry)
+
+        result = evaluator.reset()
+
+        self.assertEqual(evaluator.entry_count, 0)
+        self.assertEqual(evaluator.senses_count, 0)
+        self.assertEqual(evaluator.total_definition_token_length, 0)
+        self.assertEqual(evaluator.total_definition_char_length, 0)
 
 
 class TestNumberOfSenses(unittest.TestCase):

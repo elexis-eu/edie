@@ -226,8 +226,8 @@ class Metadata(object):
             if (isinstance(json[prop], list) and
                     all(isinstance(a, object) for a in json[prop])):
                 return [Agent(a) for a in json[prop]]
-                for a in self.agent:
-                    self.errors.extend(a.errors)
+            for a in self.agent:
+                self.errors.extend(a.errors)
             else:
                 self.errors.append(f"Value for {prop} was invalid: {json[prop]}")
         return None

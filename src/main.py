@@ -1,6 +1,7 @@
 import argparse
 import sys
-from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator,AvgDefinitionLengthEvaluator
+from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
+    AvgDefinitionLengthEvaluator
 import json
 from edie.api import ApiClient
 from edie.model import Metadata, Entry, JsonEntry
@@ -10,7 +11,8 @@ LIMIT = 100
 
 metadata_metrics = []
 
-entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(), AvgDefinitionLengthEvaluator]
+entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
+                 AvgDefinitionLengthEvaluator]
 
 
 def list_dictionaries(api_instance):
@@ -31,7 +33,7 @@ def entry_report(api_instance, dictionary, entry, dict_report):
         print("TODO: non-JSON entries")
 
 
-if __name__ == "__main__":
+def setup_argparser() -> argparse.ArgumentParser:
     argparser = argparse.ArgumentParser("ELEXIS Dictionary Evaluation Tool (EDiE)")
     argparser.add_argument("--server", action="store_true",
                            help="Start in server mode")
@@ -44,7 +46,13 @@ if __name__ == "__main__":
     argparser.add_argument("--max-entries",
                            help="Maximum number of entries to evaluate")
 
-    args = argparser.parse_args()
+    return argparser
+
+
+if __name__ == "__main__":
+
+    args = setup_argparser().parse_args()
+
     if args.max_entries:
         max_entries = int(args.max_entries)
     else:
@@ -107,7 +115,7 @@ if __name__ == "__main__":
 
                     if len(entries) < LIMIT:
                         break
-                
+
                 sys.stderr.write("\n")
                 for entry_metric in entry_metrics:
                     dict_report.update(entry_metric.result())

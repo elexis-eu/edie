@@ -14,7 +14,7 @@ LIMIT = 100
 metadata_metrics = []
 
 entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
-                 AvgDefinitionLengthEvaluator]
+                 AvgDefinitionLengthEvaluator()]
 
 
 def list_dictionaries(api_instance):

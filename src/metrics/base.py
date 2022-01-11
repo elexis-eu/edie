@@ -188,7 +188,7 @@ class AvgDefinitionLengthEvaluator(EntryMetric):
         self.senses_count += len(entry.senses)
 
         for sense in entry.senses:
-            if 'definition' is not None:
+            if sense.definition is not None:
                 self.total_definition_char_length += len(sense.definition)
                 self.total_definition_token_length += len(sense.definition.split())
 

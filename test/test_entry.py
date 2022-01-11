@@ -100,18 +100,18 @@ class TestAverageDefinitionLength(unittest.TestCase):
         self.assertEqual(evaluator.entry_count, 0)
         self.assertEqual(evaluator.total_definition_token_length, 0)
 
-    def testEntry(self):
-        f = open("test/data/entries_2_senses.json")
-        entry_json = json.load(f)
-        entry: JsonEntry = JsonEntry(entry_json)
-        evaluator = AvgDefinitionLengthEvaluator()
+    def testTwoEntriesAccumulation(self):
+        with open("test/data/entries_2_senses.json") as f:
+            entry_json = json.load(f)
+            entry: JsonEntry = JsonEntry(entry_json)
+            evaluator = AvgDefinitionLengthEvaluator()
 
-        evaluator.accumulate(entry)
+            evaluator.accumulate(entry)
 
-        self.assertEqual(evaluator.senses_count, 2)
-        self.assertGreater(evaluator.total_definition_char_length, 0)
-        self.assertEqual(evaluator.total_definition_token_length, 13)
-        self.assertEqual(evaluator.entry_count, 1)
+            self.assertEqual(evaluator.senses_count, 2)
+            self.assertGreater(evaluator.total_definition_char_length, 0)
+            self.assertEqual(evaluator.total_definition_token_length, 13)
+            self.assertEqual(evaluator.entry_count, 1)
 
     def testResult(self):
         f = open("test/data/entries_2_senses.json")

@@ -142,6 +142,7 @@ class Metadata(object):
             self.title = None
 
         if "publisher" in json:
+            # self.agent instead of self.publisher ?
             if (isinstance(json["publisher"], list) and
                     all(isinstance(a, object) for a in json["publisher"])):
                 self.agent = [Agent(a) for a in json["publisher"]]
@@ -298,15 +299,19 @@ class Entry(object):
             self.id = None
 
         if "partOfSpeech" in json:
-            if (isinstance(json["partOfSpeech"], list) and
-                    all(p in ["ADJ", "ADP", "ADV", "AUX", "CCONJ",
+            if isinstance(json["partOfSpeech"], list):
+                if all(p in ["ADJ", "ADP", "ADV", "AUX", "CCONJ",
                               "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
                               "PUNCT", "SCONJ", "SYM", "VERB", "X"]
-                        for p in json["partOfSpeech"])):
-                self.part_of_speech = [parse_part_of_speech(p, self.errors)
-                        for p in json["partOfSpeech"]]
+                        for p in json["partOfSpeech"]):
+                    self.part_of_speech = [parse_part_of_speech(p, self.errors)
+                            for p in json["partOfSpeech"]]
+                else:
+                    self.errors.append("Part of speech value was invalid: "
+                                   + str(json["partOfSpeech"]))
+                    self.part_of_speech = None
             else:
-                self.errors.append("Part of speech value was invalid: "
+                self.errors.append("Part of speech value was not a list: "
                                    + str(json["partOfSpeech"]))
                 self.part_of_speech = None
         else:
@@ -323,12 +328,22 @@ class Entry(object):
         else:
             self.formats = []
 
+class JsonApiResponse(object):
+    def __init__(self, json):
+        self.errors = []
+        self.dictionaries = {}
+
+        if "dictionaries" in json:
+            for d in json['dictionaries']:
+                self.dictionaries[d["id"]]=d
+
+
 
 class JsonEntry(object):
     def __init__(self, json):
         self.errors = []
         if "@type" in json:
-            if json["@type"] in ["LexicalEntry", "Word", 
+            if json["@type"] in ["LexicalEntry", "Word",
                     "MultiWordExpression", "Affix"]:
                 self.type = json["@type"]
             else:
@@ -353,14 +368,14 @@ class JsonEntry(object):
 
         if "partOfSpeech" in json:
             if json["partOfSpeech"] in ["adjective", "adposition", "adverb",
-                    "auxiliary", "coordinatingConjunction", "determiner", 
+                    "auxiliary", "coordinatingConjunction", "determiner",
                     "interjection", "commonNoun", "numeral", "particle", "pronoun",
-                    "properNoun", "punctuation", "subordinatingConjunction", 
+                    "properNoun", "punctuation", "subordinatingConjunction",
                     "symbol", "verb", "other"]:
-                self.part_of_speech = parse_part_of_speech(json["partOfSpeech"], 
+                self.part_of_speech = parse_part_of_speech(json["partOfSpeech"],
                         self.errors)
             else:
-                self.errors.append("Bad part of speech value: " + 
+                self.errors.append("Bad part of speech value: " +
                         str(json["partOfSpeech"]))
                 self.part_of_speech = None
         else:
@@ -563,3 +578,4 @@ def parse_part_of_speech(val, errors = None):
         if errors:
             errors.append("Invalid part of speech value: " + str(val))
         return None
+

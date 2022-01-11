@@ -5,7 +5,9 @@ from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, Definitio
 import json
 from edie.api import ApiClient
 from edie.model import Metadata, Entry, JsonEntry
+from edie.tei import convert_tei
 from requests.exceptions import RequestException
+from xml.etree import ElementTree
 
 LIMIT = 100
 
@@ -29,6 +31,18 @@ def entry_report(api_instance, dictionary, entry, dict_report):
         else:
             for entry_metric in entry_metrics:
                 entry_metric.accumulate(json_entry)
+    elif "tei" in entry.formats:
+        tei_entry = api_instance.tei(dictionary, entry.id)
+        errors = []
+        entries = convert_tei(tei_entry, errors, entry.id)
+        if errors:
+            if "entryErrors" not in dict_report:
+                dict_report["entryErrors"] = []
+            dict_report["entryErrors"].extend(errors)
+        else:
+            for entry in entries:
+                for entry_metric in entry_metrics:
+                    entry_metric.accumulate(entry)
     else:
         print("TODO: non-JSON entries")
 
@@ -45,6 +59,8 @@ def setup_argparser() -> argparse.ArgumentParser:
                            help="List of metrics to evaluate")
     argparser.add_argument("--max-entries",
                            help="Maximum number of entries to evaluate")
+    argparser.add_argument("--api-key",
+                            help="The API KEY to use")
 
     return argparser
 
@@ -65,7 +81,7 @@ if __name__ == "__main__":
         endpoint = args.e if args.e else "http://localhost:8000/"
         report = {"endpoint": endpoint}
 
-        api_instance = ApiClient(endpoint)
+        api_instance = ApiClient(endpoint, args.api_key)
         try:
             dictionary_list = list_dictionaries(api_instance)
             report["available"] = True
@@ -118,7 +134,9 @@ if __name__ == "__main__":
 
                 sys.stderr.write("\n")
                 for entry_metric in entry_metrics:
-                    dict_report.update(entry_metric.result())
+                    if entry_metric.result(): #TODO
+                        print(entry_metric, entry_metric.result())
+                        dict_report.update(entry_metric.result())
 
         except RequestException as e:
             report["available"] = False

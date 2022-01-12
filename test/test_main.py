@@ -2,6 +2,7 @@ import unittest
 from edie.model import PartOfSpeech
 from edie.tei import convert_tei
 
+
 class TestMain(unittest.TestCase):
     def setUp(self):
         pass

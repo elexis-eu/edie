@@ -7,7 +7,8 @@ class Edie(object):
     def __init__(self, api_client, metadata_metrics_evaluators: [MetadataMetric] = None):
         self.lexonomy_client: ApiClient = api_client
         self.dictionaries: [Dictionary] = []
-        self.metadata_metrics_evaluators: [MetadataMetric] = metadata_metrics_evaluators if metadata_metrics_evaluators is not None else []
+        self.metadata_metrics_evaluators: [
+            MetadataMetric] = metadata_metrics_evaluators if metadata_metrics_evaluators is not None else []
         self.metadata_report = {}
         self.report = {"endpoint": api_client.endpoint, "available": True, "dictionaries": {}}
 
@@ -41,4 +42,3 @@ class Edie(object):
             self.metadata_report[dictionary.id] = metadata_report
 
         return self.metadata_report
-

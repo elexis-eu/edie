@@ -218,7 +218,7 @@ class Metadata(object):
             if isinstance(json[prop], str):
                 try:
                     return dateutil.parser.parse(json[prop])
-                except:
+                except: #TODO add specific Exception
                     self.errors.append(f"Value for {prop} was invalid: {json[prop]}")
             else:
                 self.errors.append(f"Value for {prop} was invalid: {json[prop]}")

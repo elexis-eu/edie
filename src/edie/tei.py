@@ -1,6 +1,7 @@
 from xml.etree import ElementTree
 from edie.model import JsonEntry
 
+
 def convert_tei(tei_entry, errors=[], entry_id="NO_ID"):
     """Convert a TEI entry into Json
     tei_entry: The entry as a string
@@ -18,8 +19,8 @@ def convert_tei(tei_entry, errors=[], entry_id="NO_ID"):
                             errors.append("Multiple lemmas for entry %s" % entry_id)
                         else:
                             entry["canonicalForm"] = {
-                                    "writtenRep": orth_elem.text
-                                    }
+                                "writtenRep": orth_elem.text
+                            }
 
             for gramgrp_elem in doc.iter("gramGrp"):
                 for pos in doc.iter("pos"):
@@ -34,18 +35,19 @@ def convert_tei(tei_entry, errors=[], entry_id="NO_ID"):
                 for defn in doc.iter("def"):
                     sense["definition"] = defn.text
                 entry["senses"].append(sense)
-                
+
             entries.append(JsonEntry(entry))
         return entries
     except Exception as e:
         errors.append("Error with entry %s: %s" % (entry_id, str(e)))
 
+
 def normalise_pos(pos, errors):
-    if pos in ["adjective", "adposition", "adverb", "auxiliary", 
-            "coordinatingConjunction", "determiner", "interjection",
-            "commonNoun", "numeral", "particle", "pronoun", "properNoun",
-            "punctuation", "subordinatingConjunction", "symbol", "verb",
-            "other"]:
+    if pos in ["adjective", "adposition", "adverb", "auxiliary",
+               "coordinatingConjunction", "determiner", "interjection",
+               "commonNoun", "numeral", "particle", "pronoun", "properNoun",
+               "punctuation", "subordinatingConjunction", "symbol", "verb",
+               "other"]:
         return pos
     elif pos == "ADJ":
         return "adjective"
@@ -53,13 +55,13 @@ def normalise_pos(pos, errors):
         return "adposition"
     elif pos == "ADV":
         return "adverb"
-    elif pos == "AUX" :
+    elif pos == "AUX":
         return "auxiliary"
-    elif pos == "CCONJ" :
+    elif pos == "CCONJ":
         return "coordinatingConjunction"
     elif pos == "DET":
         return "determiner"
-    elif pos == "INTJ" :
+    elif pos == "INTJ":
         return "interjection"
     elif pos == "NN":
         return "commonNoun"

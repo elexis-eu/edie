@@ -2,6 +2,8 @@ from edie.api import ApiClient
 from edie.model import Metadata, Dictionary
 from metrics.base import MetadataMetric
 
+import logging
+
 
 class Edie(object):
     def __init__(self, api_client, metadata_metrics_evaluators: [MetadataMetric] = None):
@@ -23,6 +25,7 @@ class Edie(object):
         ]
         dictionary_ids = dictionaries if dictionaries is not None else correct_dictionaries
         for dictionary_id in dictionary_ids:
+            logging.info("Loading Metadata for %s" % dictionary_id)
             metadata = Metadata(self.lexonomy_client.about(dictionary_id))
             dictionary = Dictionary(dictionary_id, metadata)
             self.dictionaries.append(dictionary)

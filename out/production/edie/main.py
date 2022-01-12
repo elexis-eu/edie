@@ -3,7 +3,6 @@ import sys
 
 import dataclasses as dataclasses
 
-from edie.evaluator import Edie
 from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
     AvgDefinitionLengthEvaluator
 import json
@@ -78,6 +77,19 @@ def analyze_metadata():
 
     return metadata
 
+@dataclasses.dataclass
+class Dictionary(object):
+    id: str
+    metadata: Metadata
+
+
+class Edie(object):
+    def __init__(self, api_client):
+        self._dictionaries: [str] = []
+        self.lexonomy_client: ApiClient = api_client
+
+    def load_dictionaries(self, dictionaries: [str]=None):
+        pass
 
 def analyze():
     endpoint = args.e if args.e else "http://localhost:8000/"

@@ -1,4 +1,6 @@
 import re
+
+import dataclasses
 import dateutil.parser
 from enum import Enum
 
@@ -234,6 +236,12 @@ class Metadata(object):
         return None
 
 
+@dataclasses.dataclass
+class Dictionary(object):
+    id: str
+    metadata: Metadata
+
+
 class Agent(object):
     def __init__(self, json):
         self.errors = []
@@ -301,14 +309,14 @@ class Entry(object):
         if "partOfSpeech" in json:
             if isinstance(json["partOfSpeech"], list):
                 if all(p in ["ADJ", "ADP", "ADV", "AUX", "CCONJ",
-                              "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
-                              "PUNCT", "SCONJ", "SYM", "VERB", "X"]
-                        for p in json["partOfSpeech"]):
+                             "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
+                             "PUNCT", "SCONJ", "SYM", "VERB", "X"]
+                       for p in json["partOfSpeech"]):
                     self.part_of_speech = [parse_part_of_speech(p, self.errors)
-                            for p in json["partOfSpeech"]]
+                                           for p in json["partOfSpeech"]]
                 else:
                     self.errors.append("Part of speech value was invalid: "
-                                   + str(json["partOfSpeech"]))
+                                       + str(json["partOfSpeech"]))
                     self.part_of_speech = None
             else:
                 self.errors.append("Part of speech value was not a list: "
@@ -328,6 +336,7 @@ class Entry(object):
         else:
             self.formats = []
 
+
 class JsonApiResponse(object):
     def __init__(self, json):
         self.errors = []
@@ -335,8 +344,7 @@ class JsonApiResponse(object):
 
         if "dictionaries" in json:
             for d in json['dictionaries']:
-                self.dictionaries[d["id"]]=d
-
+                self.dictionaries[d["id"]] = d
 
 
 class JsonEntry(object):
@@ -344,11 +352,11 @@ class JsonEntry(object):
         self.errors = []
         if "@type" in json:
             if json["@type"] in ["LexicalEntry", "Word",
-                    "MultiWordExpression", "Affix"]:
+                                 "MultiWordExpression", "Affix"]:
                 self.type = json["@type"]
             else:
                 self.errors.append("Invalid entry type: " +
-                        str(json["@type"]))
+                                   str(json["@type"]))
                 self.type = None
         else:
             self.errors.append("No type of entry")
@@ -360,7 +368,7 @@ class JsonEntry(object):
                 self.errors.extend(self.canonical_form.errors)
             else:
                 self.errors.append("Canonical form was not an object but" +
-                        str(json["canonicalForm"]))
+                                   str(json["canonicalForm"]))
                 self.canonical_form = None
         else:
             self.errors.append("No canonical form")
@@ -368,15 +376,15 @@ class JsonEntry(object):
 
         if "partOfSpeech" in json:
             if json["partOfSpeech"] in ["adjective", "adposition", "adverb",
-                    "auxiliary", "coordinatingConjunction", "determiner",
-                    "interjection", "commonNoun", "numeral", "particle", "pronoun",
-                    "properNoun", "punctuation", "subordinatingConjunction",
-                    "symbol", "verb", "other"]:
+                                        "auxiliary", "coordinatingConjunction", "determiner",
+                                        "interjection", "commonNoun", "numeral", "particle", "pronoun",
+                                        "properNoun", "punctuation", "subordinatingConjunction",
+                                        "symbol", "verb", "other"]:
                 self.part_of_speech = parse_part_of_speech(json["partOfSpeech"],
-                        self.errors)
+                                                           self.errors)
             else:
                 self.errors.append("Bad part of speech value: " +
-                        str(json["partOfSpeech"]))
+                                   str(json["partOfSpeech"]))
                 self.part_of_speech = None
         else:
             self.part_of_speech = None
@@ -385,12 +393,12 @@ class JsonEntry(object):
             if (isinstance(json["otherForm"], list) and
                     all(isinstance(form, dict) for form in json["otherForm"])):
                 self.other_form = [JsonForm(form) for form in
-                        json["otherForm"]]
+                                   json["otherForm"]]
                 for form in self.other_form:
                     self.errors.extend(form.errors)
             else:
                 self.errors.append("Bad value for other form: " +
-                        str(json["otherForm"]))
+                                   str(json["otherForm"]))
                 self.other_form = []
         else:
             self.other_form = []
@@ -400,7 +408,7 @@ class JsonEntry(object):
                 self.morphological_pattern = json["morphologicalPattern"]
             else:
                 self.errors.append("Bad morphological pattern: " +
-                        str(json["morphologicalPattern"]))
+                                   str(json["morphologicalPattern"]))
                 self.morphological_pattern = None
         else:
             self.morphological_pattern = None
@@ -410,7 +418,7 @@ class JsonEntry(object):
                 self.etymology = json["etymology"]
             else:
                 self.errors.append("Bad etymology: " +
-                        str(json["etymology"]))
+                                   str(json["etymology"]))
                 self.etymology = None
         else:
             self.etymology = None
@@ -421,7 +429,7 @@ class JsonEntry(object):
                 self.senses = [JsonSense(sense) for sense in json["senses"]]
             else:
                 self.errors.append("Bad senses: " +
-                        str(json["senses"]))
+                                   str(json["senses"]))
                 self.senses = []
         else:
             self.errors.append("Entry has no senses")
@@ -432,7 +440,7 @@ class JsonEntry(object):
                 self.usage = json["usage"]
             else:
                 self.errors.append("Bad usage: " +
-                        str(json["usage"]))
+                                   str(json["usage"]))
                 self.usage = None
         else:
             self.usage = None
@@ -446,7 +454,7 @@ class JsonForm(object):
                 self.written_rep = json["writtenRep"]
             else:
                 self.errors.append("Bad written rep: " +
-                        str(json["writtenRep"]))
+                                   str(json["writtenRep"]))
                 self.written_rep = None
         else:
             self.written_rep = None
@@ -456,7 +464,7 @@ class JsonForm(object):
                 self.phonetic_rep = json["phoneticRep"]
             else:
                 self.errors.append("Bad phonetic rep: " +
-                        str(json["phoneticRep"]))
+                                   str(json["phoneticRep"]))
                 self.phonetic_rep = None
         else:
             self.phonetic_rep = None
@@ -470,7 +478,7 @@ class JsonSense(object):
                 self.definition = json["definition"]
             else:
                 self.errors.append("Bad definition: " +
-                        str(json["definition"]))
+                                   str(json["definition"]))
                 self.definition = None
         else:
             self.definition = None
@@ -480,7 +488,7 @@ class JsonSense(object):
                 self.reference = json["reference"]
             else:
                 self.errors.append("Bad reference: " +
-                        str(json["reference"]))
+                                   str(json["reference"]))
                 self.reference = None
         else:
             self.phonetic_rep = None
@@ -505,10 +513,11 @@ class PartOfSpeech(Enum):
     VERB = 16
     OTHER = 17
 
-def parse_part_of_speech(val, errors = None):
+
+def parse_part_of_speech(val, errors=None):
     if val == "ADJ":
         return PartOfSpeech.ADJECTIVE
-    elif  val == "ADP":
+    elif val == "ADP":
         return PartOfSpeech.ADPOSITION
     elif val == "ADV":
         return PartOfSpeech.ADVERB
@@ -578,4 +587,3 @@ def parse_part_of_speech(val, errors = None):
         if errors:
             errors.append("Invalid part of speech value: " + str(val))
         return None
-

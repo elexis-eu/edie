@@ -1,16 +1,17 @@
 import argparse
 import sys
 
-import dataclasses as dataclasses
-
 from edie.evaluator import Edie
 from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
     AvgDefinitionLengthEvaluator
 import json
 from edie.api import ApiClient
-from edie.model import Metadata, Entry, JsonEntry
+from edie.model import Metadata, Entry, JsonEntry, Dictionary
 from edie.tei import convert_tei
 from requests.exceptions import RequestException
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 LIMIT = 100
 
@@ -63,7 +64,7 @@ def setup_argparser() -> argparse.ArgumentParser:
     argparser.add_argument("--max-entries",
                            help="Maximum number of entries to evaluate")
     argparser.add_argument("--api-key",
-                            help="The API KEY to use")
+                           help="The API KEY to use")
 
     return argparser
 
@@ -85,8 +86,21 @@ def analyze():
     api_instance = ApiClient(endpoint, args.api_key)
     edie = Edie(api_instance)
 
-if __name__ == "__main__":
+    edie.load_dictionaries(args.d)
 
+
+if __name__ == "__main__":
+    args = setup_argparser().parse_args()
+
+    endpoint = args.e if args.e else "http://localhost:8000/"
+    report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
+    api_instance = ApiClient(endpoint, args.api_key)
+    edie = Edie(api_instance)
+
+    dictionaries: [Dictionary] = edie.load_dictionaries(args.d)
+
+
+def test_main():
     args = setup_argparser().parse_args()
 
     if args.max_entries:
@@ -146,7 +160,7 @@ if __name__ == "__main__":
 
                 sys.stderr.write("\n")
                 for entry_metric in entry_metrics:
-                    if entry_metric.result(): #TODO
+                    if entry_metric.result():  # TODO
                         print(entry_metric, entry_metric.result())
                         dict_report.update(entry_metric.result())
 

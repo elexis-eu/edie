@@ -27,7 +27,7 @@ class PublisherEvaluator(MetadataMetric):
     def analyze(self, metadata):
 
         if metadata.agent:
-            self.publisher = metadata.agent # TODO
+            self.publisher = metadata.agent  # TODO
             self.publisher_info_present = True
 
     def reset(self):
@@ -36,7 +36,7 @@ class PublisherEvaluator(MetadataMetric):
 
     def result(self):
         if self.publisher_info_present:
-            return {"publisher":self.publisher}
+            return {"publisher": self.publisher}
         else:
             return {}
 
@@ -57,9 +57,10 @@ class LicenseEvaluator(MetadataMetric):
 
     def result(self):
         if self.license_info_present:
-            return {"license":self.license}
+            return {"license": self.license}
         else:
             return {}
+
 
 class MetadataQuantityEvaluator(MetadataMetric):
     def __init__(self):
@@ -68,9 +69,9 @@ class MetadataQuantityEvaluator(MetadataMetric):
 
     def analyze(self, metadata):
         for el in vars(metadata):
-            self.total_metrics+=1
-            if vars(metadata)[el]!=None:
-                self.metric_count+=1
+            self.total_metrics += 1
+            if vars(metadata)[el] != None:
+                self.metric_count += 1
 
     def reset(self):
         self.metric_count = 0
@@ -78,12 +79,11 @@ class MetadataQuantityEvaluator(MetadataMetric):
 
     def result(self):
         result = {}
-        if self.metric_count>0:
-            result["metric count"]= self.metric_count
+        if self.metric_count > 0:
+            result["metric count"] = self.metric_count
         if self.total_metrics > 0:
             result["total metrics"] = self.total_metrics
         return result
-
 
 
 class RecencyEvaluator(MetadataMetric):
@@ -92,7 +92,7 @@ class RecencyEvaluator(MetadataMetric):
 
     def analyze(self, metadata):
         if metadata.issued:
-            self.recency = 2021-int(metadata.issued.year)
+            self.recency = 2021 - int(metadata.issued.year)
         elif metadata.created:
             self.recency = 2021 - int(metadata.created.year)
 
@@ -113,6 +113,7 @@ class ApiMetric(ABC):
     def analyze(self, api_response):
         pass
 
+
 class ApiMetadataResponseEvaluator(ApiMetric):
     def __init__(self):
         self.dict_count = 0
@@ -120,23 +121,24 @@ class ApiMetadataResponseEvaluator(ApiMetric):
 
     def analyze(self, api_response):
         for el in api_response.dictionaries:
-            self.dict_count+=1
+            self.dict_count += 1
             if 'language' in api_response.dictionaries[el]:
                 lang = api_response.dictionaries[el]['language']
                 if lang not in self.languages:
-                    self.languages[lang]=1
+                    self.languages[lang] = 1
                 else:
-                    self.languages[lang]+=1
+                    self.languages[lang] += 1
 
     def reset(self):
         self.dict_count = 0
         self.languages = {}
 
     def result(self):
-        if self.dict_count>0:
+        if self.dict_count > 0:
             return {"dictionary count": self.dict_count}
         else:
             return {}
+
 
 class EntryMetric(ABC):
     """Abstract class for a metric that accumulates information by iterating
@@ -199,7 +201,8 @@ class AvgDefinitionLengthEvaluator(EntryMetric):
             result.update({"DefinitionLengthPerEntryByToken": self.total_definition_token_length / self.entry_count})
 
         if self.senses_count > 0:
-            result.update({"DefinitionLengthPerSenseByCharacter": self.total_definition_char_length / self.senses_count})
+            result.update(
+                {"DefinitionLengthPerSenseByCharacter": self.total_definition_char_length / self.senses_count})
             result.update({"DefinitionLengthPerSenseByToken": self.total_definition_token_length / self.senses_count})
 
         return result
@@ -256,4 +259,3 @@ class DefinitionOfSenseEvaluator(object):
         if self.entry_count > 0:
             result.update({"DefinitionPerEntry": self.definition_count / self.entry_count})
         return result
-

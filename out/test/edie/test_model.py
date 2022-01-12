@@ -1,6 +1,6 @@
+import sys
 import unittest
 import json
-from unittest import TestCase
 
 from edie.model import *
 
@@ -75,11 +75,3 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(len(result.errors), 0)
         self.assertEqual(len(result.senses), 1)
         self.assertEqual(result.senses[0].definition, "An example OntoLex Entry")
-
-
-class TestMetadata(TestCase):
-    def test_metadata_with_error(self):
-        with open('test/data/about_with_error.json') as about_file:
-            metadata = Metadata(about_file)
-
-            self.assertGreater(len(metadata.errors), 0)

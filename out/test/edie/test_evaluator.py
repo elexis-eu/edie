@@ -4,7 +4,6 @@ from unittest.mock import patch, Mock
 
 from edie.evaluator import Edie
 from edie.model import Dictionary
-from metrics.base import RecencyEvaluator
 
 
 class TestEdie(TestCase):
@@ -13,7 +12,7 @@ class TestEdie(TestCase):
 
     @patch('edie.api.ApiClient')
     def test_load_specific_dictionaries(self, api_client):
-        with open('test/data/about_with_error.json') as about_file:
+        with open('test/data/about.json') as about_file:
             dict_id = 'DICT_ID_1'
             api_client.about.return_value = json.load(about_file)
             dictionary_id = [dict_id]
@@ -30,45 +29,29 @@ class TestEdie(TestCase):
 
     @patch('edie.api.ApiClient')
     def test_load_dictionaries(self, api_client):
-        with open('test/data/dictionaries.json') as dictionaries_file, open(
-                'test/data/about_with_error.json') as about_file:
+        with open('test/data/dictionaries.json') as dictionaries_file, open('test/data/about.json') as about_file:
             api_client.dictionaries.return_value = json.load(dictionaries_file)
             api_client.about.return_value = json.load(about_file)
             edie = Edie(api_client)
 
             response: [Dictionary] = edie.load_dictionaries()
 
-            # api_client.dictionaries.assert_called_once()
-            self.assertEqual(api_client.about.call_count, 6)
-            self.assertEqual(len(response), 6)
-            self.assertEqual(len(edie.dictionaries), 6)
+            api_client.dictionaries.assert_called_once()
+            self.assertEqual(api_client.about.call_count, 2)
+            self.assertEqual(len(response), 2)
+            self.assertEqual(len(edie.dictionaries), 2)
             self.assertIsInstance(edie.dictionaries[0], Dictionary)
 
     @patch('edie.api.ApiClient')
-    def test_metadata_with_errors_evaluation(self, api_client):
-        with open('test/data/about_with_error.json') as about_file:
+    def test_metadata_evaluation(self, api_client):
+        with open('test/data/about.json') as about_file:
             dict_id = 'DICT_ID_1'
             api_client.about.return_value = json.load(about_file)
             dictionary_id = [dict_id]
             edie = Edie(api_client)
             edie.load_dictionaries(dictionary_id)
 
-            metadata_report = edie.evaluate_metadata()
+            edie.evaluate_metadata()
 
-            self.assertTrue(dict_id in metadata_report)
-            self.assertTrue(metadata_report[dict_id]['metadataErrors'])
+            self.assertTrue(dict_id in edie.report['dictionaries'])
 
-    @patch('edie.api.ApiClient')
-    @patch('metrics.base.RecencyEvaluator')
-    def test_metadata_evaluation(self, api_client, recency_evaluator):
-        with open('test/data/about_with_error.json') as about_file:
-            dict_id = 'DICT_ID_1'
-            api_client.about.return_value = json.load(about_file)
-            recency_evaluator.result.return_value = {'recency': 100}
-            dictionary_id = [dict_id]
-            edie = Edie(api_client, metadata_metrics_evaluators=[recency_evaluator])
-            edie.load_dictionaries(dictionary_id)
-
-            metadata_report = edie.evaluate_metadata()
-
-            self.assertIsNotNone(metadata_report[dict_id]['recency'])

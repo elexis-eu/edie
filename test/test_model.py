@@ -3,8 +3,8 @@ import json
 from unittest import TestCase
 from xml.etree.ElementTree import ParseError
 
-from edie.helper import validate_tei
 from edie.model import *
+from edie.helper import validate_tei
 
 
 class TestParsing(unittest.TestCase):

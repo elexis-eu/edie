@@ -32,7 +32,7 @@ class ApiClient(object):
 
         return response.json()
 
-    def list(self, dictionary_id, limit=None, offset=None):
+    def list(self, dictionary_id: str, limit: int = None, offset: int = None):
         q = {}
         if limit:
             q["limit"] = limit
@@ -48,7 +48,10 @@ class ApiClient(object):
 
         headers = self.__get_header()
 
-        return requests.get(url, headers=headers).json()
+        response = requests.get(url, headers=headers)
+        if response.status_code == 404:
+            raise response.raise_for_status()
+        return response.json()
 
     def json(self, dictionary_id, entry_id):
         headers = self.__get_header()

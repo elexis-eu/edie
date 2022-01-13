@@ -1,9 +1,10 @@
 from xml.etree.ElementTree import ParseError
 
+from requests import HTTPError
+
 from edie.api import ApiClient
 from edie.helper import validate_tei
 from edie.model import Metadata, Dictionary, Entry, JsonEntry
-from edie.tei import convert_tei
 from metrics.base import MetadataMetric, EntryMetric
 
 import logging
@@ -54,32 +55,35 @@ class Edie(object):
 
         return self.metadata_report
 
-    def evaluate_entries(self):
+    def evaluate_entries(self, max_entries=None):
         for dictionary in self.dictionaries:
             entry_report = {}
             offset = 0
             limit = 100
             # TODO: how do we know the # of max_entries?
-            max_entries = dictionary.metadata.entryCount
+            max_entries = max_entries if max_entries is not None else dictionary.metadata.entryCount
             while offset <= max_entries:
-                entries = self.lexonomy_client.list(dictionary, limit=limit, offset=offset)
+                try:
+                    entries = self.lexonomy_client.list(dictionary.id, limit=limit, offset=offset)
 
-                if not entries:
-                    break
-                for entry in entries:
-                    offset += 1
-                    if offset > max_entries:
+                    if not entries:
                         break
-                    entry = Entry(entry)
-                    if entry.errors:
-                        self._add_errors(entry_report, entry.errors)
-                    else:
-                        self._entry_report(dictionary, entry, entry_report)
+                    for entry in entries:
+                        offset += 1
+                        if offset > max_entries:
+                            break
+                        entry = Entry(entry)
+                        if entry.errors:
+                            self._add_errors(entry_report, entry.errors)
+                        else:
+                            self._entry_report(dictionary.id, entry, entry_report)
 
-                logging.info(".")
+                    logging.info(".")
 
-                if len(entries) < limit:
-                    break
+                    if len(entries) < limit:
+                        break
+                except HTTPError as he:
+                    self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
 
             logging.info("\n")
             for entry_metric in self.entry_metrics_evaluators:
@@ -88,6 +92,9 @@ class Edie(object):
                     entry_report.update(entry_metric.result())
             self.entry_report[dictionary.id] = entry_report
         return self.entry_report
+
+    def evaluation_report(self):
+        return {'metadata_evaluation': self.metadata_report, 'entries_evaluation': self.entry_report}
 
     def _entry_report(self, dictionary_id: str, entry: Entry, entry_report: dict):
         retrieved_entry: JsonEntry = self._retrieve_entry()

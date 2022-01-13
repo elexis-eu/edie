@@ -15,10 +15,10 @@ logging.basicConfig(level=logging.DEBUG)
 
 LIMIT = 100
 
-metadata_metrics = []
+metadata_evaluators = []
 
-entry_metrics = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
-                 AvgDefinitionLengthEvaluator()]
+entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
+                    AvgDefinitionLengthEvaluator()]
 
 
 def list_dictionaries():
@@ -33,7 +33,7 @@ def entry_report(entry):
                 dict_report["entryErrors"] = []
             dict_report["entryErrors"].extend(json_entry.errors)
         else:
-            for entry_metric in entry_metrics:
+            for entry_metric in entry_evaluators:
                 entry_metric.accumulate(json_entry)
     elif "tei" in entry.formats:
         tei_entry = api_instance.tei(dictionary, entry.id)
@@ -45,7 +45,7 @@ def entry_report(entry):
             dict_report["entryErrors"].extend(errors)
         else:
             for entry in entries:
-                for entry_metric in entry_metrics:
+                for entry_metric in entry_evaluators:
                     entry_metric.accumulate(entry)
     else:
         print("TODO: non-JSON entries")
@@ -74,7 +74,7 @@ def analyze_metadata():
     if metadata.errors:
         dict_report["metadataErrors"] = metadata.errors
     else:
-        for metadata_metric in metadata_metrics:
+        for metadata_metric in metadata_evaluators:
             dict_report.update(metadata_metric.apply(metadata))
 
     return metadata
@@ -98,6 +98,7 @@ if __name__ == "__main__":
     edie = Edie(api_instance)
 
     dictionaries: [Dictionary] = edie.load_dictionaries(args.d)
+    metadata_report = edie.evaluate_metadata()
 
 
 def test_main():
@@ -124,7 +125,7 @@ def test_main():
             for dictionary in dictionaries:
                 sys.stderr.write("Evaluating %s" % dictionary)
 
-                for entry_metric in entry_metrics:
+                for entry_metric in entry_evaluators:
                     entry_metric.reset()
 
                 dict_report = {}
@@ -159,7 +160,7 @@ def test_main():
                         break
 
                 sys.stderr.write("\n")
-                for entry_metric in entry_metrics:
+                for entry_metric in entry_evaluators:
                     if entry_metric.result():  # TODO
                         print(entry_metric, entry_metric.result())
                         dict_report.update(entry_metric.result())

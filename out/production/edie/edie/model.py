@@ -204,6 +204,15 @@ class Metadata(object):
         self.temporal = self._extract_string_prop(json, 'temporal')
         self.type = self._extract_string_prop(json, 'type')
         self.valid = self._extract_date_prop(json, 'valid')
+        self.entryCount = self._extract_int_prop(json, 'entryCount')
+
+    def _extract_int_prop(self, json, prop):
+        if prop in json:
+            if isinstance(json[prop], int):
+                return json[prop]
+            else:
+                self.errors.append(f"Value for {prop} was invalid: {json[prop]}")
+        return None
 
     def _extract_string_prop(self, json, prop):
         if prop in json:
@@ -218,7 +227,7 @@ class Metadata(object):
             if isinstance(json[prop], str):
                 try:
                     return dateutil.parser.parse(json[prop])
-                except:
+                except: #TODO add specific Exception
                     self.errors.append(f"Value for {prop} was invalid: {json[prop]}")
             else:
                 self.errors.append(f"Value for {prop} was invalid: {json[prop]}")

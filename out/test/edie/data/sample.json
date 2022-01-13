@@ -16,10 +16,7 @@
 "email": "contact@institute.com"
 }
 ],
-"publisher": [
-{
-"name": "Publishing Company"
-}
-],
-  "issued": "2001"
+"publisher": [{"name": "Publishing Company"}],
+"issued": "2001",
+"entryCount": 200
 }

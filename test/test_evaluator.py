@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from edie.evaluator import Edie
-from edie.model import Dictionary
+from edie.model import Dictionary, Metadata
 
 
 class TestEdie(TestCase):
@@ -64,6 +64,21 @@ class TestEdie(TestCase):
 
         self.assertIsNotNone(metadata_report[self.dict_id]['recency'])
 
-    @patch('edie.api.ApiClient')
-    def test_entry_evaluation(self, api_client):
-        pass
+    @patch('metrics.base.AvgDefinitionLengthEvaluator')
+    def test_entry_evaluation(self, avg_def_evaluator):
+        with open('test/data/about_with_error.json') as about_file:
+            metadata_json = json.load(about_file)
+
+            avg_def_evaluator.result.return_value = {'DefinitionLengthPerEntryByCharacter': 71.0,
+                                                     'DefinitionLengthPerEntryByToken': 13.0,
+                                                     'DefinitionLengthPerSenseByCharacter': 35.5,
+                                                     'DefinitionLengthPerSenseByToken': 6.5}
+            edie = Edie(self.api_client, entry_metrics_evaluators=[avg_def_evaluator])
+            edie.dictionaries = [Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))]
+
+            entry_report = edie.evaluate_entries()
+
+            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerEntryByCharacter'])
+            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerEntryByToken'])
+            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerSenseByCharacter'])
+            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerSenseByToken'])

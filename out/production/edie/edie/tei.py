@@ -23,7 +23,7 @@ def convert_tei(tei_entry, errors=[], entry_id="NO_ID"):
                             }
 
             for gramgrp_elem in doc.iter("gramGrp"):
-                for pos in doc.iter("pos"):
+                for pos in gramgrp_elem.iter("pos"):
                     if "norm" in pos.attrib:
                         entry["partOfSpeech"] = normalise_pos(pos.attrib["norm"], errors)
                     else:
@@ -31,10 +31,10 @@ def convert_tei(tei_entry, errors=[], entry_id="NO_ID"):
 
             entry["senses"] = []
             for sense in doc.iter("sense"):
-                sense = {}
-                for defn in doc.iter("def"):
-                    sense["definition"] = defn.text
-                entry["senses"].append(sense)
+                sense_dict = {}
+                for defn in sense.iter("def"):
+                    sense_dict["definition"] = defn.text
+                entry["senses"].append(sense_dict)
 
             entries.append(JsonEntry(entry))
         return entries

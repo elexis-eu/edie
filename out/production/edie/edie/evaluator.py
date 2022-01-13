@@ -1,6 +1,10 @@
+from xml.etree.ElementTree import ParseError
+
+from requests import HTTPError
+
 from edie.api import ApiClient
+from edie.helper import validate_tei
 from edie.model import Metadata, Dictionary, Entry, JsonEntry
-from edie.tei import convert_tei
 from metrics.base import MetadataMetric, EntryMetric
 
 import logging
@@ -13,8 +17,10 @@ class Edie(object):
         self.dictionaries: [Dictionary] = []
         self.metadata_metrics_evaluators: [
             MetadataMetric] = metadata_metrics_evaluators if metadata_metrics_evaluators is not None else []
-        self.entry_metrics_evaluators: [EntryMetric] = entry_metrics_evaluators if entry_metrics_evaluators is not None else []
+        self.entry_metrics_evaluators: [
+            EntryMetric] = entry_metrics_evaluators if entry_metrics_evaluators is not None else []
         self.metadata_report = {}
+        self.entry_report = {}
         self.report = {"endpoint": api_client.endpoint, "available": True, "dictionaries": {}}
 
     def load_dictionaries(self, dictionaries: [str] = None):
@@ -49,70 +55,72 @@ class Edie(object):
 
         return self.metadata_report
 
-    def evaluate_entries(self):
+    def evaluate_entries(self, max_entries=None):
         for dictionary in self.dictionaries:
             entry_report = {}
             offset = 0
             limit = 100
             # TODO: how do we know the # of max_entries?
-            max_entries = dictionary.metadata.entryCount
+            max_entries = max_entries if max_entries is not None else dictionary.metadata.entryCount
             while offset <= max_entries:
-                entries = self.lexonomy_client.list(dictionary, limit=limit, offset=offset)
+                try:
+                    entries = self.lexonomy_client.list(dictionary.id, limit=limit, offset=offset)
 
-                if not entries:
-                    break
-                for entry in entries:
-                    offset += 1
-                    if offset > max_entries:
+                    if not entries:
                         break
-                    entry = Entry(entry)
-                    if entry.errors:
-                        if "entryErrors" not in entry_report:
-                            entry_report["entryErrors"] = []
-                        entry_report["entryErrors"].extend(entry.errors)
-                    else:
-                        self._entry_report(self.lexonomy_client, dictionary, entry,
-                                     entry_report)
+                    for entry in entries:
+                        offset += 1
+                        if offset > max_entries:
+                            break
+                        entry = Entry(entry)
+                        if entry.errors:
+                            self._add_errors(entry_report, entry.errors)
+                        else:
+                            self._entry_report(dictionary.id, entry, entry_report)
 
-                logging.info(".")
+                    logging.info(".")
 
-                if len(entries) < LIMIT:
-                    break
+                    if len(entries) < limit:
+                        break
+                except HTTPError as he:
+                    self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
 
             logging.info("\n")
-            for entry_metric in entry_evaluators:
+            for entry_metric in self.entry_metrics_evaluators:
                 if entry_metric.result():  # TODO
                     print(entry_metric, entry_metric.result())
-                    dict_report.update(entry_metric.result())
+                    entry_report.update(entry_metric.result())
+            self.entry_report[dictionary.id] = entry_report
+        return self.entry_report
+
+    def evaluation_report(self):
+        return {'metadata_evaluation': self.metadata_report, 'entries_evaluation': self.entry_report}
 
     def _entry_report(self, dictionary_id: str, entry: Entry, entry_report: dict):
-        if "json" in entry.formats:
-            json_entry = JsonEntry(self.lexonomy_client.json(dictionary_id, entry.id))
-            if json_entry.errors:
-                if "entryErrors" not in entry_report:
-                    entry_report["entryErrors"] = []
-                entry_report["entryErrors"].extend(json_entry.errors)
+        retrieved_entry: JsonEntry = self._retrieve_entry()
+        if retrieved_entry is not None:
+            if retrieved_entry.errors:
+                self._add_errors(entry_report, retrieved_entry.errors)
             else:
-                for entry_metric in self.entry_metrics_evaluators:
-                    entry_metric.accumulate(json_entry)
+                self._run_entry_metrics_evaluators(retrieved_entry)
+
+    def _add_errors(self, entry_report, errors):
+        if "entryErrors" not in entry_report:
+            entry_report["entryErrors"] = []
+        entry_report["entryErrors"].extend(errors)
+
+    def _retrieve_entry(self,dictionary_id, entry: Entry) -> JsonEntry:
+        if "json" in entry.formats:
+             return JsonEntry(self.lexonomy_client.json(dictionary_id, entry.id))
         elif "tei" in entry.formats:
             tei_entry = self.lexonomy_client.tei(dictionary_id, entry.id)
-            errors = []
-            entries = convert_tei(tei_entry, errors, entry.id)
-            if errors:
-                if "entryErrors" not in entry_report:
-                    entry_report["entryErrors"] = []
-                entry_report["entryErrors"].extend(errors)
-            else:
-                for entry in entries:
-                    for entry_metric in self.entry_metrics_evaluators:
-                        entry_metric.accumulate(entry)
-        else:
-            print("TODO: non-JSON entries")
+            try:
+                tei_entry_element = validate_tei(tei_entry)
+                return JsonEntry.from_tei_entry(tei_entry_element)
+            except ParseError as pe:
+                self._add_errors(["Error with entry %s: %s" % (entry.id, str(pe))])
 
-
-    def _r
-        un_entry_metrics_evaluators(self, entry):
+    def _run_entry_metrics_evaluators(self, entry):
         for entry_metric in self.entry_metrics_evaluators:
             entry_metric.accumulate(entry)
 

@@ -11,10 +11,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-LIMIT = 100
-
 metadata_evaluators = []
-
 entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
                     AvgDefinitionLengthEvaluator()]
 

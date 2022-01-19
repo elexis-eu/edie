@@ -97,11 +97,12 @@ class Edie(object):
         return {'metadata_evaluation': self.metadata_report, 'entries_evaluation': self.entry_report}
 
     def _entry_report(self, dictionary_id: str, entry: Entry, entry_report: dict):
-        retrieved_entry: JsonEntry = self._retrieve_entry(dictionary_id, entry)
+        retrieved_entry: JsonEntry = self._retrieve_entry()
         if retrieved_entry is not None:
             if retrieved_entry.errors:
                 self._add_errors(entry_report, retrieved_entry.errors)
-            self._run_entry_metrics_evaluators(retrieved_entry)
+            else:
+                self._run_entry_metrics_evaluators(retrieved_entry)
 
     def _add_errors(self, entry_report, errors):
         if "entryErrors" not in entry_report:

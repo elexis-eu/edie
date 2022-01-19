@@ -3,7 +3,7 @@ import sys
 
 from edie.evaluator import Edie
 from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
-    AvgDefinitionLengthEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator
+    AvgDefinitionLengthEvaluator
 import json
 from edie.api import ApiClient
 from edie.model import Dictionary
@@ -11,7 +11,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator()]
+metadata_evaluators = []
 entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
                     AvgDefinitionLengthEvaluator()]
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         endpoint = args.e if args.e else "http://localhost:8000/"
         report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
         api_instance = ApiClient(endpoint, args.api_key)
-        edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators, entry_metrics_evaluators=entry_evaluators)
+        edie = Edie(api_instance)
 
         dictionaries: [Dictionary] = edie.load_dictionaries(args.d)
         metadata_report = edie.evaluate_metadata()

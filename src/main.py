@@ -9,7 +9,7 @@ from edie.api import ApiClient
 from edie.model import Dictionary
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator()]
 entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         max_entries = float('inf')
 
     if args.server:
-        print("TODO: implement server mode")
+        logging.debug("TODO: implement server mode")
         sys.exit(-1)
     else:
         endpoint = args.e if args.e else "http://localhost:8000/"

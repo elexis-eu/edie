@@ -78,17 +78,14 @@ class Edie(object):
                         else:
                             self._entry_report(dictionary.id, entry, entry_report)
 
-                    logging.info(".")
-
                     if len(entries) < limit:
                         break
                 except HTTPError as he:
                     self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
 
-            logging.info("\n")
             for entry_metric in self.entry_metrics_evaluators:
                 if entry_metric.result():  # TODO
-                    print(entry_metric, entry_metric.result())
+                    logging.debug(entry_metric, entry_metric.result())
                     entry_report.update(entry_metric.result())
             self.entry_report[dictionary.id] = entry_report
         return self.entry_report

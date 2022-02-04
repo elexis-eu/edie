@@ -9,6 +9,7 @@ from edie.model import Metadata, Dictionary, Entry, JsonEntry
 from metrics.base import MetadataMetric, EntryMetric
 
 
+
 class Edie(object):
     def __init__(self, api_client, metadata_metrics_evaluators: [MetadataMetric] = None,
                  entry_metrics_evaluators: [EntryMetric] = None):
@@ -18,8 +19,7 @@ class Edie(object):
             MetadataMetric] = metadata_metrics_evaluators if metadata_metrics_evaluators is not None else []
         self.entry_metrics_evaluators: [
             EntryMetric] = entry_metrics_evaluators if entry_metrics_evaluators is not None else []
-        self.metadata_report = {}
-        self.entry_report = {}
+
         self.report = {"endpoint": api_client.endpoint, "available": True, "dictionaries": {}}
 
     def load_dictionaries(self, dictionaries: [str] = None):
@@ -40,24 +40,26 @@ class Edie(object):
             self.dictionaries.append(dictionary)
         return self.dictionaries
 
-    def evaluate_metadata(self):
+    def evaluate_metadata(self) -> None:
         for dictionary in self.dictionaries:
+            self._prepare_report(dictionary)
+
             sys.stderr.write("Evaluating %s" % dictionary)
+
             metadata_report = {}
             metadata = dictionary.metadata
             if dictionary.metadata.errors:
-                metadata_report['metadataErrors'] = metadata.errors
+                metadata_report['errors'] = dictionary.metadata.errors
 
             for metadata_evaluator in self.metadata_metrics_evaluators:
                 metadata_evaluator.analyze(metadata)
                 metadata_report.update(metadata_evaluator.result())
 
-            self.metadata_report[dictionary.id] = metadata_report
+            self.report['dictionaries'][dictionary.id]['metadata_report'] = metadata_report
 
-        return self.metadata_report
-
-    def evaluate_entries(self, max_entries=None):
+    def evaluate_entries(self, max_entries=None) -> None:
         for dictionary in self.dictionaries:
+            self._prepare_report(dictionary)
             entry_report = {}
             offset = 0
             limit = 100
@@ -75,9 +77,9 @@ class Edie(object):
                             break
                         entry = Entry(entry)
                         if entry.errors:
-                            self._add_errors(entry.errors)
+                            self._add_errors(entry_report, entry.errors)
                         else:
-                            self._entry_report(dictionary.id, entry, entry_report)
+                            self._entry_report(dictionary.id, entry_report, entry)
 
                     sys.stderr.write(".")
                     sys.stderr.flush()
@@ -86,30 +88,24 @@ class Edie(object):
 
                 except HTTPError as he:
                     self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
+                except ParseError as pe:
+                    self._add_errors(entry_report, str(pe))
+
 
             sys.stderr.write("\n")
 
             for entry_metric in self.entry_metrics_evaluators:
-                if entry_metric.result():  # TODO
+                if entry_metric.result():
                     print(entry_metric, entry_metric.result())
                     entry_report.update(entry_metric.result())
-            self.entry_report[dictionary.id] = entry_report
-        return self.entry_report
+            self._add_entry_report(dictionary, entry_report)
 
-    def evaluation_report(self):
-        return {'metadata_evaluation': self.metadata_report, 'entries_evaluation': self.entry_report}
-
-    def _entry_report(self, dictionary_id: str, entry: Entry, entry_report: dict):
+    def _entry_report(self, dictionary_id: str, entry_report: dict, entry: Entry):
         retrieved_entry: JsonEntry = self._retrieve_entry(dictionary_id, entry)
         if retrieved_entry is not None:
             if retrieved_entry.errors:
-                self._add_errors(retrieved_entry.errors)
+                self._add_errors(entry_report, retrieved_entry.errors)
             self._run_entry_metrics_evaluators(retrieved_entry)
-
-    def _add_errors(self, errors):
-        if "entryErrors" not in self.entry_report:
-            self.entry_report["entryErrors"] = []
-        self.entry_report["entryErrors"].extend(errors)
 
     def _retrieve_entry(self, dictionary_id, entry: Entry) -> JsonEntry:
         if "json" in entry.formats:
@@ -120,8 +116,23 @@ class Edie(object):
                 tei_entry_element = validate_tei(tei_entry)
                 return JsonEntry.from_tei_entry(tei_entry_element, entry.id)
             except ParseError as pe:
-                self._add_errors(["Error with entry %s: %s" % (entry.id, str(pe))])
+                raise ParseError("Error with entry %s: %s" % (entry.id, str(pe)))
 
     def _run_entry_metrics_evaluators(self, entry):
         for entry_metric in self.entry_metrics_evaluators:
             entry_metric.accumulate(entry)
+
+    def _prepare_report(self, dictionary):
+        if dictionary.id not in self.report['dictionaries']:
+            self.report['dictionaries'][dictionary.id] = {'entry_report':{}, 'metadata_report': {}}
+
+    def _add_entry_report(self, dictionary, entry_report):
+        self.report['dictionaries'][dictionary.id]['entry_report'] = entry_report
+
+    def _add_errors(self, entry_report, errors):
+        if "errors" not in entry_report:
+            entry_report["errors"] = []
+        entry_report["errors"].extend(errors)
+
+    def evaluation_report(self):
+        return self.report

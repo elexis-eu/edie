@@ -48,10 +48,10 @@ class TestEdie(TestCase):
         edie = Edie(self.api_client)
         edie.load_dictionaries(dictionary_id)
 
-        metadata_report = edie.evaluate_metadata()
+        edie.evaluate_metadata()
 
-        self.assertTrue(self.dict_id in metadata_report)
-        self.assertTrue(metadata_report[self.dict_id]['metadataErrors'])
+        self.assertTrue(self.dict_id in edie.report['dictionaries'])
+        self.assertTrue(edie.report['dictionaries'][self.dict_id]['metadata_report']['errors'])
 
     @patch('metrics.base.RecencyEvaluator')
     def test_metadata_evaluation(self, recency_evaluator):
@@ -60,9 +60,9 @@ class TestEdie(TestCase):
         edie = Edie(self.api_client, metadata_metrics_evaluators=[recency_evaluator])
         edie.load_dictionaries(dictionary_id)
 
-        metadata_report = edie.evaluate_metadata()
+        edie.evaluate_metadata()
 
-        self.assertIsNotNone(metadata_report[self.dict_id]['recency'])
+        self.assertIsNotNone(edie.report['dictionaries'][self.dict_id]['metadata_report']['recency'])
 
     @patch('metrics.base.AvgDefinitionLengthEvaluator')
     def test_entry_evaluation(self, avg_def_evaluator):
@@ -76,9 +76,23 @@ class TestEdie(TestCase):
             edie = Edie(self.api_client, entry_metrics_evaluators=[avg_def_evaluator])
             edie.dictionaries = [Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))]
 
-            entry_report = edie.evaluate_entries()
+            edie.evaluate_entries()
 
-            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerEntryByCharacter'])
-            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerEntryByToken'])
-            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerSenseByCharacter'])
-            self.assertIsNotNone(entry_report[self.dict_id]['DefinitionLengthPerSenseByToken'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id)['DefinitionLengthPerEntryByCharacter'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id)['DefinitionLengthPerEntryByToken'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id)['DefinitionLengthPerSenseByCharacter'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id)['DefinitionLengthPerSenseByToken'])
+
+    @patch('metrics.base.AvgDefinitionLengthEvaluator')
+    def test_entry_evaluation_with_errors(self, avg_def_evaluator):
+        with open('test/data/about_with_error.json') as about_file:
+            metadata_json = json.load(about_file)
+            self.api_client.list.return_value = "Not Json"
+
+            edie = Edie(self.api_client, entry_metrics_evaluators=[avg_def_evaluator])
+            edie.dictionaries = [Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))]
+
+            edie.evaluate_entries()
+
+            self.assertIsNotNone(edie.entry_report(self.dict_id)['errors'])
+            self.assertIs(len(edie.entry_report(self.dict_id)['errors']), 24)

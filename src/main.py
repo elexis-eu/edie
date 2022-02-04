@@ -8,7 +8,6 @@ import json
 from edie.api import ApiClient
 from edie.model import Dictionary
 
-
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator()]
 entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
                     AvgDefinitionLengthEvaluator()]
@@ -47,9 +46,17 @@ if __name__ == "__main__":
         endpoint = args.e if args.e else "http://localhost:8000/"
         report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
         api_instance = ApiClient(endpoint, args.api_key)
-        edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators, entry_metrics_evaluators=entry_evaluators)
+        edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
+                    entry_metrics_evaluators=entry_evaluators)
 
         dictionaries: [Dictionary] = edie.load_dictionaries(args.d)
-        metadata_report = edie.evaluate_metadata()
-        entry_report = edie.evaluate_entries(10)
-        print(json.dumps(edie.evaluation_report()))
+        edie.evaluate_metadata()
+        edie.evaluate_entries(10)
+        report = edie.evaluation_report()
+
+        for dictionary in report['dictionaries']:
+            print("Evaluation Result of Dictionary " + dictionary, end='\n')
+            print("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']), end='\n')
+            print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
+            print('\n')
+

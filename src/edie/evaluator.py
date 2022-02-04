@@ -100,6 +100,13 @@ class Edie(object):
                     entry_report.update(entry_metric.result())
             self._add_entry_report(dictionary, entry_report)
 
+    def evaluation_report(self):
+        return self.report
+
+    def entry_report(self, dictionary_id):
+        return self.report['dictionaries'][dictionary_id]['entry_report']
+
+
     def _entry_report(self, dictionary_id: str, entry_report: dict, entry: Entry):
         retrieved_entry: JsonEntry = self._retrieve_entry(dictionary_id, entry)
         if retrieved_entry is not None:
@@ -134,5 +141,3 @@ class Edie(object):
             entry_report["errors"] = []
         entry_report["errors"].extend(errors)
 
-    def evaluation_report(self):
-        return self.report

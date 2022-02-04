@@ -7,9 +7,7 @@ from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, Definitio
 import json
 from edie.api import ApiClient
 from edie.model import Dictionary
-import logging
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator()]
 entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
@@ -43,7 +41,7 @@ if __name__ == "__main__":
         max_entries = float('inf')
 
     if args.server:
-        logging.debug("TODO: implement server mode")
+        print("TODO: implement server mode")
         sys.exit(-1)
     else:
         endpoint = args.e if args.e else "http://localhost:8000/"
@@ -54,4 +52,4 @@ if __name__ == "__main__":
         dictionaries: [Dictionary] = edie.load_dictionaries(args.d)
         metadata_report = edie.evaluate_metadata()
         entry_report = edie.evaluate_entries(10)
-        logging.info(json.dumps(edie.evaluation_report()))
+        print(json.dumps(edie.evaluation_report()))

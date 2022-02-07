@@ -269,7 +269,7 @@ class SizeOfDictionaryEvaluator(MetadataMetric):
         self.entryCount = metadata.entryCount
 
     def reset(self):
-        pass
+        self.entryCount = None
 
     def result(self):
         pass

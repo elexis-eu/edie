@@ -7,6 +7,10 @@ class AggregatedMetric(ABC):
 
 
 class DictionarySizeAggregatedEvaluator(AggregatedMetric):
+    pass
+
+
+class TestDictionarySizeAggregatedEvaluator(TestCase):
 
     def test_aggregatedMetrics(self) -> None:
         evaluator = DictionarySizeAggregatedEvaluator()

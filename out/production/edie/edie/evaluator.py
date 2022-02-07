@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 from xml.etree.ElementTree import ParseError
 
 from requests import HTTPError
@@ -101,6 +102,17 @@ class Edie(object):
 
     def evaluation_report(self):
         return self.report
+
+    def entry_evaluation_report_as_dataframe(self):
+        return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['entry_report']
+                                      for i in self.report['dictionaries'].keys()},
+                                     orient='index')
+
+    def metadata_evaluation_report_as_dataframe(self):
+        pass
+#        return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['metadata_report']
+#                                       for i in self.report['dictionaries'].keys()},
+#                                      orient='index')
 
     def entry_report(self, dictionary_id):
         return self.report['dictionaries'][dictionary_id]['entry_report']

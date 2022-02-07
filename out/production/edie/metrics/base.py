@@ -7,6 +7,10 @@ class MetadataMetric(ABC):
     """Abstract class for a metric that depends on only the metadata"""
 
     @abstractmethod
+    def aggregate(self):
+        pass
+
+    @abstractmethod
     def analyze(self, metadata):
         pass
 

@@ -112,4 +112,15 @@ class TestEdie(TestCase):
             self.assertIn('formsPerEntry', df.columns)
 
     def test_metadata_report_to_dataframe(self):
-        
+        with open("test/data/end_report.json") as report_file:
+            end_report = json.load(report_file)
+            edie = Edie(self.api_client)
+            edie.report = end_report
+
+            df = edie.metadata_evaluation_report_as_dataframe()
+
+            self.assertEqual(len(df.index), 6)
+            self.assertEqual(len(df.columns), 3)
+            self.assertIn('elexis-dsl-kalkar', df.index)
+            self.assertIn('errors', df.columns)
+            self.assertIn('total metrics', df.columns)

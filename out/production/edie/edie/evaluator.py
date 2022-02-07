@@ -109,10 +109,9 @@ class Edie(object):
                                      orient='index')
 
     def metadata_evaluation_report_as_dataframe(self):
-        pass
-#        return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['metadata_report']
-#                                       for i in self.report['dictionaries'].keys()},
-#                                      orient='index')
+        return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['metadata_report']
+                                       for i in self.report['dictionaries'].keys()},
+                                      orient='index')
 
     def entry_report(self, dictionary_id):
         return self.report['dictionaries'][dictionary_id]['entry_report']

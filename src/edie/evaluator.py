@@ -64,7 +64,7 @@ class Edie(object):
             offset = 0
             limit = 100
 
-            max_entries = max_entries if max_entries is not None else dictionary.metadata.entryCount
+            max_entries = max_entries if max_entries is not None else dictionary.metadata.entry_count
 
             while offset <= max_entries:
                 try:

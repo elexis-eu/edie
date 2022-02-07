@@ -24,6 +24,7 @@ class PublisherEvaluator(MetadataMetric):
         self.publisher = ''
         self.publisher_info_present = False
 
+
     def analyze(self, metadata):
 
         if metadata.agent:
@@ -46,6 +47,7 @@ class LicenseEvaluator(MetadataMetric):
         self.license = ''
         self.license_info_present = False
 
+
     def analyze(self, metadata):
         if metadata.license:
             self.license = metadata.license
@@ -66,6 +68,7 @@ class MetadataQuantityEvaluator(MetadataMetric):
     def __init__(self):
         self.metric_count = 0
         self.total_metrics = 0
+
 
     def analyze(self, metadata):
         for el in vars(metadata):
@@ -89,6 +92,7 @@ class MetadataQuantityEvaluator(MetadataMetric):
 class RecencyEvaluator(MetadataMetric):
     def __init__(self):
         self.recency = None
+
 
     def analyze(self, metadata):
         if metadata.issued:
@@ -263,13 +267,18 @@ class DefinitionOfSenseEvaluator(EntryMetric):
 
 class SizeOfDictionaryEvaluator(MetadataMetric):
     def __init__(self):
-        self.entryCount = None
+        self.avg_size = None
+        self.entry_count = None
 
     def analyze(self, metadata):
-        self.entryCount = metadata.entryCount
+        self.entry_count = metadata.entry_count
 
     def reset(self):
-        self.entryCount = None
+        self.entry_count = None
 
     def result(self):
-        pass
+        result = {}
+        if self.entry_count > 0:
+            result.update({"sizeOfDictionary": self.entry_count})
+
+        return result

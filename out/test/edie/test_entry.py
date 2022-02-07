@@ -163,6 +163,17 @@ class TestSizeOfDictionary(unittest.TestCase):
             evaluator.reset()
             self.assertEqual(evaluator.entryCount, None)
 
+    def test_result(self) -> None:
+        f = open("test/data/sample.json")
+        entry_json = json.load(f)
+        f.close()
+
+        metadata_entry: Metadata = Metadata(entry_json)
+
+        evaluator = RecencyEvaluator()
+        evaluator.analyze(metadata_entry)
+        result = evaluator.result()
+        self.assertIsNotNone(result['recency'])
 
 class TestRecency(unittest.TestCase):
 

@@ -143,7 +143,7 @@ class TestSizeOfDictionary(unittest.TestCase):
 
     def test_init(self) -> None:
         evaluator = SizeOfDictionaryEvaluator()
-        self.assertEqual(evaluator.entryCount, None)
+        self.assertEqual(evaluator.entry_count, None)
 
     def test_sizeOfDictionary(self):
         evaluator = SizeOfDictionaryEvaluator()
@@ -151,17 +151,27 @@ class TestSizeOfDictionary(unittest.TestCase):
 
             evaluator.analyze(Metadata(json.load(sample_data)))
 
-            self.assertGreater(evaluator.entryCount, 0)
+            self.assertGreater(evaluator.entry_count, 0)
 
     def test_reset(self) -> None:
         with open("test/data/sample.json") as sample_data:
             entry_json = json.load(sample_data)
             metadata_entry: Metadata = Metadata(entry_json)
             evaluator = SizeOfDictionaryEvaluator()
+
             evaluator.analyze(metadata_entry)
 
             evaluator.reset()
-            self.assertEqual(evaluator.entryCount, None)
+            self.assertEqual(evaluator.entry_count, None)
+
+    def test_result(self) -> None:
+        with open("test/data/sample.json") as sample_data:
+            evaluator = SizeOfDictionaryEvaluator()
+            evaluator.entry_count = 100
+
+            result = evaluator.result()
+
+            self.assertIsNotNone(result['sizeOfDictionary'])
 
 
 class TestRecency(unittest.TestCase):

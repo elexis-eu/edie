@@ -1,0 +1,156 @@
+{
+  "endpoint": "http://lexonomy.elex.is/",
+  "available": true,
+  "dictionaries": {
+    "elexis-dsl-kalkar": {
+      "entry_report": {
+        "errors": [
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['noun']",
+          "Part of speech value was invalid: ['verb']"
+        ]
+      },
+      "metadata_report": {
+        "errors": [
+          "License not specified"
+        ],
+        "metric count": 9,
+        "total metrics": 56
+      }
+    },
+    "elexis-dsl-moth": {
+      "entry_report": {
+        "errors": [
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['adv.']",
+          "Part of speech value was invalid: ['pr\u00e6p.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['udr\u00e5bsord']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']"
+        ]
+      },
+      "metadata_report": {
+        "errors": [
+          "License not specified"
+        ],
+        "metric count": 18,
+        "total metrics": 112
+      }
+    },
+    "elexis-dsl-ods": {
+      "entry_report": {
+        "errors": [
+          "Part of speech value was invalid: ['pr\u00e6p.']",
+          "Part of speech value was invalid: ['v. og sb.']",
+          "Part of speech value was invalid: ['pron.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']",
+          "Part of speech value was invalid: ['sb.']"
+        ]
+      },
+      "metadata_report": {
+        "errors": [
+          "License not specified"
+        ],
+        "metric count": 27,
+        "total metrics": 168
+      }
+    },
+    "elexis-oeaw-jakob": {
+      "entry_report": {
+        "errors": [
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry"
+        ],
+        "formsPerEntry": 1.0,
+        "sensesPerEntry": 1.0,
+        "DefinitionPerSense": 1.0,
+        "DefinitionPerEntry": 1.0,
+        "DefinitionLengthPerEntryByCharacter": 18.2,
+        "DefinitionLengthPerEntryByToken": 3.0,
+        "DefinitionLengthPerSenseByCharacter": 18.2,
+        "DefinitionLengthPerSenseByToken": 3.0
+      },
+      "metadata_report": {
+        "errors": [
+          "License not specified"
+        ],
+        "metric count": 36,
+        "total metrics": 224
+      }
+    },
+    "elexis-oeaw-schranka": {
+      "entry_report": {
+        "errors": [
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry",
+          "No type of entry"
+        ],
+        "formsPerEntry": 1.0,
+        "sensesPerEntry": 1.0,
+        "DefinitionPerSense": 0.95,
+        "DefinitionPerEntry": 0.95,
+        "DefinitionLengthPerEntryByCharacter": 25.95,
+        "DefinitionLengthPerEntryByToken": 3.95,
+        "DefinitionLengthPerSenseByCharacter": 25.95,
+        "DefinitionLengthPerSenseByToken": 3.95
+      },
+      "metadata_report": {
+        "errors": [
+          "License not specified"
+        ],
+        "metric count": 45,
+        "total metrics": 280
+      }
+    },
+    "elexis-tcdh-bmz": {
+      "entry_report": {
+        "formsPerEntry": 1.0,
+        "sensesPerEntry": 1.0,
+        "DefinitionPerSense": 0.95,
+        "DefinitionPerEntry": 0.95,
+        "DefinitionLengthPerEntryByCharacter": 25.95,
+        "DefinitionLengthPerEntryByToken": 3.95,
+        "DefinitionLengthPerSenseByCharacter": 25.95,
+        "DefinitionLengthPerSenseByToken": 3.95
+      },
+      "metadata_report": {
+        "errors": [
+          "License not specified"
+        ],
+        "metric count": 54,
+        "total metrics": 336
+      }
+    }
+  }
+}

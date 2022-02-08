@@ -24,7 +24,6 @@ REQUIRES = [
   "python-dateutil",
   "requests >= 2.26.0",
   "pandas >= 1.1.5",
-  "numpy==1.19.5"
 ]
 
 setup(

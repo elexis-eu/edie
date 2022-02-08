@@ -64,4 +64,5 @@ if __name__ == "__main__":
             print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
             print('\n')
 
+        print("=== AGGREGATION METRICS ===")
         print(report[AGGREGATION_METRICS])

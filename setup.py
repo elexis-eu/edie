@@ -23,7 +23,8 @@ REQUIRES = [
   "urllib3 >= 1.25.3",
   "python-dateutil",
   "requests >= 2.26.0",
-  "pandas >= 1.1.5"
+  "pandas >= 1.1.5",
+  "numpy==1.19.5"
 ]
 
 setup(

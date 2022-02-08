@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from edie.evaluator import Edie
 from edie.model import Dictionary, Metadata
+from edie.vocabulary import AGGREGATION_METRICS, AVG_DICTIONARY_SIZE, DICTIONARY_SIZE
 
 
 class TestEdie(TestCase):
@@ -120,7 +121,21 @@ class TestEdie(TestCase):
             df = edie.metadata_evaluation_report_as_dataframe()
 
             self.assertEqual(len(df.index), 6)
-            self.assertEqual(len(df.columns), 3)
+            self.assertEqual(len(df.columns), 4)
             self.assertIn('elexis-dsl-kalkar', df.index)
             self.assertIn('errors', df.columns)
             self.assertIn('total metrics', df.columns)
+
+    def test_aggregation(self) -> None:
+        with open("test/data/end_report.json") as report_file:
+            end_report = json.load(report_file)
+            edie = Edie(self.api_client)
+            edie.report = end_report
+
+            edie.aggregated_evaluation()
+
+            self.assertIsNotNone(edie.report[AGGREGATION_METRICS])
+            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['min'], 0)
+            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['max'], 0)
+            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['mean'], 0)
+            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['median'], 0)

@@ -2,13 +2,16 @@ import argparse
 import sys
 
 from edie.evaluator import Edie
+from edie.vocabulary import AGGREGATION_METRICS, DICTIONARY_SIZE
 from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
-    AvgDefinitionLengthEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator
+    AvgDefinitionLengthEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, \
+    SizeOfDictionaryEvaluator
 import json
 from edie.api import ApiClient
 from edie.model import Dictionary
 
-metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator()]
+metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator(),
+                       SizeOfDictionaryEvaluator()]
 entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
                     AvgDefinitionLengthEvaluator()]
 
@@ -52,6 +55,7 @@ if __name__ == "__main__":
         dictionaries: [Dictionary] = edie.load_dictionaries(args.d)
         edie.evaluate_metadata()
         edie.evaluate_entries(10)
+        edie.aggregated_evaluation()
         report = edie.evaluation_report()
 
         for dictionary in report['dictionaries']:
@@ -60,3 +64,4 @@ if __name__ == "__main__":
             print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
             print('\n')
 
+        print(report[AGGREGATION_METRICS])

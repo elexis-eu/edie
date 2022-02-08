@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from edie.model import Entry, JsonEntry
+from edie.vocabulary import SIZE_OF_DICTIONARY
 
 
 class MetadataMetric(ABC):
@@ -279,6 +280,6 @@ class SizeOfDictionaryEvaluator(MetadataMetric):
     def result(self):
         result = {}
         if self.entry_count > 0:
-            result.update({"sizeOfDictionary": self.entry_count})
+            result.update({SIZE_OF_DICTIONARY: self.entry_count})
 
         return result

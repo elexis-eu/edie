@@ -7,7 +7,9 @@ from requests import HTTPError
 from edie.api import ApiClient
 from edie.helper import validate_tei
 from edie.model import Metadata, Dictionary, Entry, JsonEntry
+from edie.vocabulary import SIZE_OF_DICTIONARY, AGGREGATION_METRICS, DICTIONARY_SIZE
 from metrics.base import MetadataMetric, EntryMetric
+
 
 
 class Edie(object):
@@ -19,6 +21,7 @@ class Edie(object):
             MetadataMetric] = metadata_metrics_evaluators if metadata_metrics_evaluators is not None else []
         self.entry_metrics_evaluators: [
             EntryMetric] = entry_metrics_evaluators if entry_metrics_evaluators is not None else []
+        self.aggregate_evaluators: []
 
         self.report = {"endpoint": api_client.endpoint, "available": True, "dictionaries": {}}
 
@@ -149,3 +152,15 @@ class Edie(object):
         if "errors" not in entry_report:
             entry_report["errors"] = []
         entry_report["errors"].extend(errors)
+
+    def aggregated_evaluation(self):
+        df = self.metadata_evaluation_report_as_dataframe()
+
+        self.report[AGGREGATION_METRICS] = {
+            DICTIONARY_SIZE: {
+                'min': df[SIZE_OF_DICTIONARY].min(),
+                'max': df[SIZE_OF_DICTIONARY].max(),
+                'mean': df[SIZE_OF_DICTIONARY].mean(),
+                'median': df[SIZE_OF_DICTIONARY].median()
+            }
+        }

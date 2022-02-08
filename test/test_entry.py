@@ -12,7 +12,8 @@ import json
 
 from edie.model import JsonEntry, Metadata, JsonApiResponse
 from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, \
-    RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, AvgDefinitionLengthEvaluator, SizeOfDictionaryEvaluator
+    RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, AvgDefinitionLengthEvaluator, \
+    SizeOfDictionaryEvaluator
 
 
 class TestEntry(unittest.TestCase):
@@ -29,8 +30,6 @@ class TestEntry(unittest.TestCase):
         # FIXME: construct object with mandatory attributes with example values
         # model = Entry()  # noqa: E501
         pass
-
-
 
 
 class TestPublisherMetadata(unittest.TestCase):
@@ -133,7 +132,6 @@ class TestLicence(unittest.TestCase):
         self.assertTrue(evaluator.license_info_present, 'License info missing')
 
 
-
 class TestSizeOfDictionary(unittest.TestCase):
     def setUp(self) -> None:
         pass
@@ -148,7 +146,6 @@ class TestSizeOfDictionary(unittest.TestCase):
     def test_sizeOfDictionary(self):
         evaluator = SizeOfDictionaryEvaluator()
         with open("test/data/sample.json") as sample_data:
-
             evaluator.analyze(Metadata(json.load(sample_data)))
 
             self.assertGreater(evaluator.entry_count, 0)
@@ -165,13 +162,12 @@ class TestSizeOfDictionary(unittest.TestCase):
             self.assertEqual(evaluator.entry_count, None)
 
     def test_result(self) -> None:
-        with open("test/data/sample.json") as sample_data:
-            evaluator = SizeOfDictionaryEvaluator()
-            evaluator.entry_count = 100
+        evaluator = SizeOfDictionaryEvaluator()
+        evaluator.entry_count = 100
 
-            result = evaluator.result()
+        result = evaluator.result()
 
-            self.assertIsNotNone(result['sizeOfDictionary'])
+        self.assertIsNotNone(result['sizeOfDictionary'])
 
 
 class TestRecency(unittest.TestCase):

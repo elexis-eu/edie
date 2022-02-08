@@ -137,4 +137,3 @@ class TestDefinitionOfSenses(unittest.TestCase):
         self.assertEqual(evaluator.senses_count, 1)
         self.assertEqual(evaluator.definition_count, 1)
 
-

@@ -22,7 +22,8 @@
           "License not specified"
         ],
         "metric count": 9,
-        "total metrics": 56
+        "total metrics": 56,
+        "sizeOfDictionary": 76388
       }
     },
     "elexis-dsl-moth": {
@@ -45,7 +46,8 @@
           "License not specified"
         ],
         "metric count": 18,
-        "total metrics": 112
+        "total metrics": 112,
+        "sizeOfDictionary": 93832
       }
     },
     "elexis-dsl-ods": {
@@ -68,7 +70,8 @@
           "License not specified"
         ],
         "metric count": 27,
-        "total metrics": 168
+        "total metrics": 168,
+        "sizeOfDictionary": 163012
       }
     },
     "elexis-oeaw-jakob": {
@@ -99,7 +102,8 @@
           "License not specified"
         ],
         "metric count": 36,
-        "total metrics": 224
+        "total metrics": 224,
+        "sizeOfDictionary": 8475
       }
     },
     "elexis-oeaw-schranka": {
@@ -130,7 +134,8 @@
           "License not specified"
         ],
         "metric count": 45,
-        "total metrics": 280
+        "total metrics": 280,
+        "sizeOfDictionary": 1334
       }
     },
     "elexis-tcdh-bmz": {
@@ -149,7 +154,8 @@
           "License not specified"
         ],
         "metric count": 54,
-        "total metrics": 336
+        "total metrics": 336,
+        "sizeOfDictionary": 36048
       }
     }
   }

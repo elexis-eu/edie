@@ -11,6 +11,7 @@ import unittest
 import json
 
 from edie.model import JsonEntry, Metadata, JsonApiResponse
+from edie.vocabulary import SIZE_OF_DICTIONARY
 from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, \
     RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, AvgDefinitionLengthEvaluator, \
     SizeOfDictionaryEvaluator
@@ -167,7 +168,7 @@ class TestSizeOfDictionary(unittest.TestCase):
 
         result = evaluator.result()
 
-        self.assertIsNotNone(result['sizeOfDictionary'])
+        self.assertIsNotNone(result[SIZE_OF_DICTIONARY])
 
 
 class TestRecency(unittest.TestCase):

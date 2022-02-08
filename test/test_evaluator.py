@@ -39,9 +39,9 @@ class TestEdie(TestCase):
         response: [Dictionary] = edie.load_dictionaries()
 
         # api_client.dictionaries.assert_called_once()
-        self.assertEqual(self.api_client.about.call_count, 6)
-        self.assertEqual(len(response), 6)
-        self.assertEqual(len(edie.dictionaries), 6)
+        self.assertEqual(self.api_client.about.call_count, 3)
+        self.assertEqual(len(response), 3)
+        self.assertEqual(len(edie.dictionaries), 3)
         self.assertIsInstance(edie.dictionaries[0], Dictionary)
 
     def test_metadata_with_errors_evaluation(self):

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from edie.model import Entry, JsonEntry
+from edie.vocabulary import SIZE_OF_DICTIONARY
 
 
 class MetadataMetric(ABC):
@@ -24,6 +25,7 @@ class PublisherEvaluator(MetadataMetric):
         self.publisher = ''
         self.publisher_info_present = False
 
+
     def analyze(self, metadata):
 
         if metadata.agent:
@@ -46,6 +48,7 @@ class LicenseEvaluator(MetadataMetric):
         self.license = ''
         self.license_info_present = False
 
+
     def analyze(self, metadata):
         if metadata.license:
             self.license = metadata.license
@@ -66,6 +69,7 @@ class MetadataQuantityEvaluator(MetadataMetric):
     def __init__(self):
         self.metric_count = 0
         self.total_metrics = 0
+
 
     def analyze(self, metadata):
         for el in vars(metadata):
@@ -89,6 +93,7 @@ class MetadataQuantityEvaluator(MetadataMetric):
 class RecencyEvaluator(MetadataMetric):
     def __init__(self):
         self.recency = None
+
 
     def analyze(self, metadata):
         if metadata.issued:
@@ -234,7 +239,7 @@ class NumberOfSensesEvaluator(EntryMetric):
         self.entry_count = 0
 
 
-class DefinitionOfSenseEvaluator(object):
+class DefinitionOfSenseEvaluator(EntryMetric):
     def __init__(self):
         self.entry_count = 0
         self.definition_count = 0
@@ -258,4 +263,23 @@ class DefinitionOfSenseEvaluator(object):
             result.update({"DefinitionPerSense": self.definition_count / self.senses_count})
         if self.entry_count > 0:
             result.update({"DefinitionPerEntry": self.definition_count / self.entry_count})
+        return result
+
+
+class SizeOfDictionaryEvaluator(MetadataMetric):
+    def __init__(self):
+        self.avg_size = None
+        self.entry_count = None
+
+    def analyze(self, metadata):
+        self.entry_count = metadata.entry_count
+
+    def reset(self):
+        self.entry_count = None
+
+    def result(self):
+        result = {}
+        if self.entry_count > 0:
+            result.update({SIZE_OF_DICTIONARY: self.entry_count})
+
         return result

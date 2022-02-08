@@ -205,7 +205,7 @@ class Metadata(object):
         self.temporal = self._extract_string_prop(json, 'temporal')
         self.type = self._extract_string_prop(json, 'type')
         self.valid = self._extract_date_prop(json, 'valid')
-        self.entryCount = self._extract_int_prop(json, 'entryCount')
+        self.entry_count = self._extract_int_prop(json, 'entryCount')
 
     def _extract_int_prop(self, json, prop):
         if prop in json:

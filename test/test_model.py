@@ -78,12 +78,10 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(len(result.senses), 1)
         self.assertEqual(result.senses[0].definition, "An example OntoLex Entry")
 
-
     def testValidateNonTei(self):
         entry = "{this is not xml}"
 
         self.assertRaises(ParseError, validate_tei, entry)
-
 
     def testValidateTei(self):
         entry = """<entry xml:id="id">
@@ -135,4 +133,3 @@ class TestMetadata(TestCase):
             metadata = Metadata(about_file)
 
             self.assertGreater(len(metadata.errors), 0)
-

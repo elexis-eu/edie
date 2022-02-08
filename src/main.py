@@ -2,11 +2,10 @@ import argparse
 import sys
 
 from edie.evaluator import Edie
-from edie.vocabulary import AGGREGATION_METRICS, DICTIONARY_SIZE
+from edie.vocabulary import AGGREGATION_METRICS
 from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
     AvgDefinitionLengthEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, \
     SizeOfDictionaryEvaluator
-import json
 from edie.api import ApiClient
 from edie.model import Dictionary
 

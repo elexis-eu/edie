@@ -27,9 +27,6 @@ class Edie(object):
 
     def load_dictionaries(self, dictionaries: [str] = None):
         correct_dictionaries = [
-            "elexis-dsl-kalkar",
-            "elexis-dsl-moth",
-            "elexis-dsl-ods",
             "elexis-oeaw-jakob",
             "elexis-oeaw-schranka",
             "elexis-tcdh-bmz"

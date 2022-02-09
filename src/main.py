@@ -45,13 +45,18 @@ if __name__ == "__main__":
         print("TODO: implement server mode")
         sys.exit(-1)
     else:
+        test_dictionaries = [
+            "elexis-oeaw-jakob",
+            "elexis-oeaw-schranka",
+            "elexis-tcdh-bmz"
+        ]
         endpoint = args.e if args.e else "http://localhost:8000/"
         report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
         api_instance = ApiClient(endpoint, args.api_key)
         edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
                     entry_metrics_evaluators=entry_evaluators)
 
-        dictionaries: [Dictionary] = edie.load_dictionaries(args.d)
+        dictionaries: [Dictionary] = edie.load_dictionaries(test_dictionaries)
         edie.evaluate_metadata()
         edie.evaluate_entries(10)
         edie.aggregated_evaluation()

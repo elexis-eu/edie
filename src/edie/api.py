@@ -1,4 +1,5 @@
 import requests
+import sys
 from urllib.parse import urlencode
 
 
@@ -21,7 +22,7 @@ class ApiClient(object):
     def dictionaries(self):
         headers = self.__get_header()
         return requests.get(self.endpoint + "dictionaries",
-                            headers=headers).json()
+                            headers=headers).json()["dictionaries"]
 
     def about(self, dictionary_id):
         headers = self.__get_header()

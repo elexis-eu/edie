@@ -64,24 +64,29 @@ class Edie(object):
             entry_report = {}
 
             max_entries = max_entries if max_entries is not None else dictionary.metadata.entry_count
-            while self.entries_offset <= max_entries:
-                try:
-                    entries = self.lexonomy_client.list(dictionary.id, limit=self.entries_limit, offset=self.entries_offset)
-                    if not entries:
-                        break
-                    self._handle_entries(dictionary, entries, entry_report, max_entries)
-                    sys.stderr.write(".")
-                    sys.stderr.flush()
-                    if len(entries) < self.entries_limit:
-                        break
+            self._loop_entries_endpoint(dictionary, entry_report, max_entries)
 
-                except HTTPError:
-                    self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
-                except ParseError as pe:
-                    self._add_errors(entry_report, str(pe))
             sys.stderr.write("\n")
+
             self._collect_entry_metrics(entry_report)
             self._add_entry_report(dictionary, entry_report)
+
+    def _loop_entries_endpoint(self, dictionary, entry_report, max_entries):
+        while self.entries_offset <= max_entries:
+            try:
+                entries = self.lexonomy_client.list(dictionary.id, limit=self.entries_limit, offset=self.entries_offset)
+                if not entries:
+                    break
+                self._handle_entries(dictionary, entries, entry_report, max_entries)
+                sys.stderr.write(".")
+                sys.stderr.flush()
+                if len(entries) < self.entries_limit:
+                    break
+
+            except HTTPError:
+                self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
+            except ParseError as pe:
+                self._add_errors(entry_report, str(pe))
 
     def _collect_entry_metrics(self, entry_report):
         for entry_metric in self.entry_metrics_evaluators:

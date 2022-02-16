@@ -11,7 +11,6 @@ from edie.vocabulary import SIZE_OF_DICTIONARY, AGGREGATION_METRICS, DICTIONARY_
 from metrics.base import MetadataMetric, EntryMetric
 
 
-
 class Edie(object):
     def __init__(self, api_client, metadata_metrics_evaluators: [MetadataMetric] = None,
                  entry_metrics_evaluators: [EntryMetric] = None):
@@ -24,6 +23,8 @@ class Edie(object):
         self.aggregate_evaluators: []
 
         self.report = {"endpoint": api_client.endpoint, "available": True, "dictionaries": {}}
+        self.entries_offset = 0
+        self.entries_limit = 100
 
     def load_dictionaries(self, dictionaries: [str] = None):
         correct_dictionaries = [
@@ -61,52 +62,50 @@ class Edie(object):
         for dictionary in self.dictionaries:
             self._prepare_report(dictionary)
             entry_report = {}
-            offset = 0
-            limit = 100
 
-            max_entries = max_entries if max_entries is not None else dictionary.metadata.entry_count
-
-            while offset <= max_entries:
+            while self.entries_offset <= max_entries if max_entries is not None else dictionary.metadata.entry_count:
                 try:
-                    entries = self.lexonomy_client.list(dictionary.id, limit=limit, offset=offset)
-
+                    entries = self.lexonomy_client.list(dictionary.id, limit=self.entries_limit, offset=self.entries_offset)
                     if not entries:
                         break
-                    for entry in entries:
-                        offset += 1
-                        if offset > max_entries:
-                            break
-                        entry = Entry(entry)
-                        if entry.errors:
-                            self._add_errors(entry_report, entry.errors)
-                        else:
-                            self._entry_report(dictionary.id, entry_report, entry)
-
+                    self._handle_entries(dictionary, entries, entry_report, max_entries)
                     sys.stderr.write(".")
                     sys.stderr.flush()
-                    if len(entries) < limit:
+                    if len(entries) < self.entries_limit:
                         break
 
                 except HTTPError as he:
                     self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
                 except ParseError as pe:
                     self._add_errors(entry_report, str(pe))
-
             sys.stderr.write("\n")
-
-            for entry_metric in self.entry_metrics_evaluators:
-                if entry_metric.result():
-                    print(entry_metric, entry_metric.result())
-                    entry_report.update(entry_metric.result())
+            self._collect_entry_metrics(entry_report)
             self._add_entry_report(dictionary, entry_report)
+
+    def _collect_entry_metrics(self, entry_report):
+        for entry_metric in self.entry_metrics_evaluators:
+            if entry_metric.result():
+                print(entry_metric, entry_metric.result())
+                entry_report.update(entry_metric.result())
+
+    def _handle_entries(self, dictionary, entries, entry_report, max_entries):
+        for entry in entries:
+            self.entries_offset += 1
+            if self.entries_offset > max_entries:
+                break
+            entry = Entry(entry)
+            if entry.errors:
+                self._add_errors(entry_report, entry.errors)
+            else:
+                self._entry_report(dictionary.id, entry_report, entry)
 
     def evaluation_report(self):
         return self.report
 
     def entry_evaluation_report_as_dataframe(self):
         return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['entry_report']
-                                      for i in self.report['dictionaries'].keys()},
-                                     orient='index')
+                                       for i in self.report['dictionaries'].keys()},
+                                      orient='index')
 
     def metadata_evaluation_report_as_dataframe(self):
         return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['metadata_report']

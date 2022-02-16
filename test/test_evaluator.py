@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from edie.evaluator import Edie
 from edie.model import Dictionary, Metadata
-from edie.vocabulary import AGGREGATION_METRICS, AVG_DICTIONARY_SIZE, DICTIONARY_SIZE
+from edie.vocabulary import AGGREGATION_METRICS, DICTIONARY_SIZE
 
 
 class TestEdie(TestCase):

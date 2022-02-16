@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 
 from edie.model import Entry, JsonEntry
-from edie.vocabulary import SIZE_OF_DICTIONARY
+from edie.vocabulary import SIZE_OF_DICTIONARY, JSON_FORMAT, TEI_FORMAT, ONTOLEX_FORMAT, FORMATS_PER_ENTRY, \
+    JSON_SUPPORTED_ENTRIES, TEI_SUPPORTED_ENTRIES, ONTOLEX_SUPPORTED_ENTRIES, JSON_COVERAGE, TEI_COVERAGE, \
+    ONTOLEX_COVERAGE
 
 
 class MetadataMetric(ABC):
@@ -150,15 +152,15 @@ class EntryMetric(ABC):
        over the entries in a dictionary"""
 
     @abstractmethod
-    def accumulate(self, entry_details: object, entry_metadata: Entry):
+    def accumulate(self, entry_details: object, entry_metadata: Entry) -> None:
         pass
 
     @abstractmethod
-    def result(self):
+    def result(self) -> dict:
         pass
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         pass
 
 
@@ -241,20 +243,42 @@ class NumberOfSensesEvaluator(EntryMetric):
 
 class SupportedFormatsEvaluator(EntryMetric):
     def __init__(self):
+        self.json_count = 0
+        self.tei_count = 0
+        self.ontolex_count = 0
         self.entry_count = 0
         self.formats_count = 0
 
     def accumulate(self, entry_details: object, entry_metadata: Entry):
-        self.formats_count = len(entry_metadata.formats)
+        self.formats_count += len(entry_metadata.formats)
         self.entry_count += 1
+        for metadata_format in entry_metadata.formats:
+            if metadata_format == JSON_FORMAT:
+                self.json_count += 1
+            elif metadata_format == TEI_FORMAT:
+                self.tei_count += 1
+            elif metadata_format == ONTOLEX_FORMAT:
+                self.ontolex_count += 1
 
-    def result(self):
-        pass
+    def result(self) -> dict:
+        result = {}
+        if self.entry_count > 0:
+            result[FORMATS_PER_ENTRY] = self.formats_count / self.entry_count
+            result[JSON_SUPPORTED_ENTRIES] = self.json_count
+            result[TEI_SUPPORTED_ENTRIES] = self.tei_count
+            result[ONTOLEX_SUPPORTED_ENTRIES] = self.ontolex_count
+            result[JSON_COVERAGE] = self.json_count / self.entry_count
+            result[TEI_COVERAGE] = self.tei_count / self.entry_count
+            result[ONTOLEX_COVERAGE] = self.ontolex_count / self.entry_count
+
+        return result
 
     def reset(self):
-        pass
-
-
+        self.entry_count = 0
+        self.formats_count = 0
+        self.json_count = 0
+        self.tei_count = 0
+        self.ontolex_count = 0
 
 
 class DefinitionOfSenseEvaluator(EntryMetric):

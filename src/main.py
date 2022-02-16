@@ -5,14 +5,14 @@ from edie.evaluator import Edie
 from edie.vocabulary import AGGREGATION_METRICS
 from metrics.base import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
     AvgDefinitionLengthEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, \
-    SizeOfDictionaryEvaluator
+    SizeOfDictionaryEvaluator, SupportedFormatsEvaluator
 from edie.api import ApiClient
 from edie.model import Dictionary
 
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator(),
                        SizeOfDictionaryEvaluator()]
 entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
-                    AvgDefinitionLengthEvaluator()]
+                    AvgDefinitionLengthEvaluator(), SupportedFormatsEvaluator()]
 
 
 def setup_argparser() -> argparse.ArgumentParser:

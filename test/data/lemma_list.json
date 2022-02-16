@@ -4,7 +4,8 @@
     "language": "de",
     "formats": [
       "tei",
-      "json"
+      "json",
+      "ontolex"
     ],
     "id": "16656",
     "lemma": "a"

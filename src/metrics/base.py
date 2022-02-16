@@ -150,7 +150,7 @@ class EntryMetric(ABC):
        over the entries in a dictionary"""
 
     @abstractmethod
-    def accumulate(self, entry):
+    def accumulate(self, entry_details: object, entry_metadata: Entry):
         pass
 
     @abstractmethod
@@ -167,9 +167,9 @@ class FormsPerEntryMetric(EntryMetric):
         self.form_count = 0
         self.entry_count = 0
 
-    def accumulate(self, entry: Entry):
+    def accumulate(self, entry_details: Entry, entry_metadata):
         self.form_count += 1
-        self.form_count += len(entry.other_form)
+        self.form_count += len(entry_details.other_form)
         self.entry_count += 1
 
     def result(self):
@@ -190,11 +190,11 @@ class AvgDefinitionLengthEvaluator(EntryMetric):
         self.total_definition_token_length = 0
         self.senses_count = 0
 
-    def accumulate(self, entry):
+    def accumulate(self, entry_details, entry_metadata):
         self.entry_count += 1
-        self.senses_count += len(entry.senses)
+        self.senses_count += len(entry_details.senses)
 
-        for sense in entry.senses:
+        for sense in entry_details.senses:
             if sense.definition is not None:
                 self.total_definition_char_length += len(sense.definition)
                 self.total_definition_token_length += len(sense.definition.split())
@@ -224,8 +224,8 @@ class NumberOfSensesEvaluator(EntryMetric):
         self.senses_count = 0
         self.entry_count = 0
 
-    def accumulate(self, entry: JsonEntry):
-        self.senses_count += len(entry.senses)
+    def accumulate(self, entry_details: JsonEntry, entry_metadata):
+        self.senses_count += len(entry_details.senses)
         self.entry_count += 1
 
     def result(self):
@@ -239,16 +239,34 @@ class NumberOfSensesEvaluator(EntryMetric):
         self.entry_count = 0
 
 
+class SupportedFormatsEvaluator(EntryMetric):
+    def __init__(self):
+        self.entry_count = 0
+        self.formats_count = 0
+
+    def accumulate(self, entry_details: object, entry_metadata: Entry):
+        self.formats_count = len(entry_metadata.formats)
+        self.entry_count += 1
+
+    def result(self):
+        pass
+
+    def reset(self):
+        pass
+
+
+
+
 class DefinitionOfSenseEvaluator(EntryMetric):
     def __init__(self):
         self.entry_count = 0
         self.definition_count = 0
         self.senses_count = 0
 
-    def accumulate(self, entry: JsonEntry):
-        self.senses_count += len(entry.senses)
+    def accumulate(self, entry_details: JsonEntry, entry_metadata):
+        self.senses_count += len(entry_details.senses)
         self.entry_count += 1
-        for sense in entry.senses:
+        for sense in entry_details.senses:
             if sense.definition is not None:
                 self.definition_count += 1
 
@@ -283,3 +301,4 @@ class SizeOfDictionaryEvaluator(MetadataMetric):
             result.update({SIZE_OF_DICTIONARY: self.entry_count})
 
         return result
+

@@ -121,7 +121,7 @@ class Edie(object):
         if retrieved_entry is not None:
             if retrieved_entry.errors:
                 self._add_errors(entry_report, retrieved_entry.errors)
-            self._run_entry_metrics_evaluators(retrieved_entry)
+            self._run_entry_metrics_evaluators(retrieved_entry, entry)
 
     def _retrieve_entry(self, dictionary_id, entry: Entry) -> JsonEntry:
         if "json" in entry.formats:
@@ -134,9 +134,9 @@ class Edie(object):
             except ParseError as pe:
                 raise ParseError("Error with entry %s: %s" % (entry.id, str(pe)))
 
-    def _run_entry_metrics_evaluators(self, entry):
+    def _run_entry_metrics_evaluators(self, entry_details, entry_metadata):
         for entry_metric in self.entry_metrics_evaluators:
-            entry_metric.accumulate(entry)
+            entry_metric.accumulate(entry_details, entry_metadata)
 
     def _prepare_report(self, dictionary):
         if dictionary.id not in self.report['dictionaries']:

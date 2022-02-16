@@ -27,7 +27,6 @@ class PublisherEvaluator(MetadataMetric):
         self.publisher = ''
         self.publisher_info_present = False
 
-
     def analyze(self, metadata):
 
         if metadata.agent:
@@ -35,8 +34,7 @@ class PublisherEvaluator(MetadataMetric):
             self.publisher_info_present = True
 
     def reset(self):
-        self.publisher = ''
-        self.publisher_info_present = False
+        self.__init__()
 
     def result(self):
         if self.publisher_info_present:
@@ -50,15 +48,13 @@ class LicenseEvaluator(MetadataMetric):
         self.license = ''
         self.license_info_present = False
 
-
     def analyze(self, metadata):
         if metadata.license:
             self.license = metadata.license
             self.license_info_present = True
 
     def reset(self):
-        self.license = ''
-        self.license_info_present = False
+        self.__init__()
 
     def result(self):
         if self.license_info_present:
@@ -72,7 +68,6 @@ class MetadataQuantityEvaluator(MetadataMetric):
         self.metric_count = 0
         self.total_metrics = 0
 
-
     def analyze(self, metadata):
         for el in vars(metadata):
             self.total_metrics += 1
@@ -80,8 +75,7 @@ class MetadataQuantityEvaluator(MetadataMetric):
                 self.metric_count += 1
 
     def reset(self):
-        self.metric_count = 0
-        self.total_metrics = 0
+        self.__init__()
 
     def result(self):
         result = {}
@@ -95,7 +89,6 @@ class MetadataQuantityEvaluator(MetadataMetric):
 class RecencyEvaluator(MetadataMetric):
     def __init__(self):
         self.recency = None
-
 
     def analyze(self, metadata):
         if metadata.issued:
@@ -137,8 +130,7 @@ class ApiMetadataResponseEvaluator(ApiMetric):
                     self.languages[lang] += 1
 
     def reset(self):
-        self.dict_count = 0
-        self.languages = {}
+        self.__init__()
 
     def result(self):
         if self.dict_count > 0:
@@ -181,8 +173,7 @@ class FormsPerEntryMetric(EntryMetric):
             return {}
 
     def reset(self):
-        self.form_count = 0
-        self.entry_count = 0
+        self.__init__()
 
 
 class AvgDefinitionLengthEvaluator(EntryMetric):
@@ -237,8 +228,7 @@ class NumberOfSensesEvaluator(EntryMetric):
             return {}
 
     def reset(self):
-        self.senses_count = 0
-        self.entry_count = 0
+        self.__init__()
 
 
 class SupportedFormatsEvaluator(EntryMetric):
@@ -295,9 +285,7 @@ class DefinitionOfSenseEvaluator(EntryMetric):
                 self.definition_count += 1
 
     def reset(self):
-        self.entry_count = 0
-        self.definition_count = 0
-        self.senses_count = 0
+        self.__init__()
 
     def result(self):
         result = {}
@@ -325,4 +313,3 @@ class SizeOfDictionaryEvaluator(MetadataMetric):
             result.update({SIZE_OF_DICTIONARY: self.entry_count})
 
         return result
-

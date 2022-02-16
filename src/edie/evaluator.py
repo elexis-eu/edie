@@ -63,7 +63,8 @@ class Edie(object):
             self._prepare_report(dictionary)
             entry_report = {}
 
-            while self.entries_offset <= max_entries if max_entries is not None else dictionary.metadata.entry_count:
+            max_entries = max_entries if max_entries is not None else dictionary.metadata.entry_count
+            while self.entries_offset <= max_entries:
                 try:
                     entries = self.lexonomy_client.list(dictionary.id, limit=self.entries_limit, offset=self.entries_offset)
                     if not entries:
@@ -74,7 +75,7 @@ class Edie(object):
                     if len(entries) < self.entries_limit:
                         break
 
-                except HTTPError as he:
+                except HTTPError:
                     self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
                 except ParseError as pe:
                     self._add_errors(entry_report, str(pe))

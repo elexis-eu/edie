@@ -1,8 +1,27 @@
 import json
 import unittest
+import pytest
 
-from edie.model import JsonEntry
-from metrics.base import AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator
+from edie.model import JsonEntry, Entry
+from edie.vocabulary import FORMATS_PER_ENTRY, JSON_SUPPORTED_ENTRIES, TEI_SUPPORTED_ENTRIES, ONTOLEX_SUPPORTED_ENTRIES, \
+    JSON_COVERAGE, TEI_COVERAGE, ONTOLEX_COVERAGE
+from metrics.base import AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
+    SupportedFormatsEvaluator
+
+
+
+@pytest.fixture(scope="class")
+def entries_response(request):
+    with open("test/data/entries.json") as f:
+        loaded_json = json.load(f)
+        request.cls.entries_response = JsonEntry(loaded_json)
+
+
+@pytest.fixture(scope="class")
+def entries_metadata(request):
+    with open("test/data/lemma_list.json") as f:
+        loaded_json = json.load(f)
+        request.cls.entries_metadata = Entry(loaded_json[0])
 
 
 class TestAverageDefinitionLength(unittest.TestCase):
@@ -26,7 +45,7 @@ class TestAverageDefinitionLength(unittest.TestCase):
             entry: JsonEntry = JsonEntry(entry_json)
             evaluator = AvgDefinitionLengthEvaluator()
 
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, None)
 
             self.assertEqual(evaluator.senses_count, 2)
             self.assertGreater(evaluator.total_definition_char_length, 0)
@@ -38,7 +57,7 @@ class TestAverageDefinitionLength(unittest.TestCase):
             entry_json = json.load(f)
             entry: JsonEntry = JsonEntry(entry_json)
             evaluator = AvgDefinitionLengthEvaluator()
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, None)
 
             result = evaluator.result()
 
@@ -52,7 +71,7 @@ class TestAverageDefinitionLength(unittest.TestCase):
             entry_json = json.load(f)
             entry: JsonEntry = JsonEntry(entry_json)
             evaluator = AvgDefinitionLengthEvaluator()
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, None)
 
             evaluator.reset()
 
@@ -79,10 +98,66 @@ class TestNumberOfSenses(unittest.TestCase):
 
         evaluator = NumberOfSensesEvaluator()
 
-        evaluator.accumulate(entry)
+        evaluator.accumulate(entry, None)
 
         self.assertEqual(evaluator.senses_count, 1)
         self.assertEqual(evaluator.entry_count, 1)
+
+
+@pytest.mark.usefixtures("entries_response")
+@pytest.mark.usefixtures("entries_metadata")
+class TestSupportedFormats(unittest.TestCase):
+    def setUp(self) -> None:
+        pass
+
+    def tearDown(self) -> None:
+        pass
+
+    def test_supported_formats_init(self) -> None:
+        evaluator = SupportedFormatsEvaluator()
+
+        self.assertEqual(evaluator.formats_count, 0)
+        self.assertEqual(evaluator.entry_count, 0)
+        self.assertEqual(evaluator.json_count, 0)
+        self.assertEqual(evaluator.tei_count, 0)
+        self.assertEqual(evaluator.ontolex_count, 0)
+
+    def test_entry(self) -> None:
+        evaluator = SupportedFormatsEvaluator()
+
+        evaluator.accumulate(self.entries_response, self.entries_metadata)
+
+        self.assertEqual(evaluator.entry_count, 1)
+        self.assertEqual(evaluator.formats_count, 3)
+        self.assertEqual(evaluator.json_count, 1)
+        self.assertEqual(evaluator.tei_count, 1)
+        self.assertEqual(evaluator.ontolex_count, 1)
+
+    def test_report(self) -> None:
+        evaluator = SupportedFormatsEvaluator()
+        evaluator.accumulate(self.entries_response, self.entries_metadata)
+
+        result = evaluator.result()
+
+        self.assertEqual(result[FORMATS_PER_ENTRY], 3)
+        self.assertEqual(result[JSON_SUPPORTED_ENTRIES], 1)
+        self.assertEqual(result[TEI_SUPPORTED_ENTRIES], 1)
+        self.assertEqual(result[ONTOLEX_SUPPORTED_ENTRIES], 1)
+        self.assertEqual(result[JSON_COVERAGE], 1)
+        self.assertEqual(result[TEI_COVERAGE], 1)
+        self.assertEqual(result[ONTOLEX_COVERAGE], 1)
+
+    def test_reset(self):
+        evaluator = SupportedFormatsEvaluator()
+        evaluator.accumulate(self.entries_response, self.entries_metadata)
+
+        evaluator.reset()
+
+        self.assertEqual(evaluator.entry_count, 0)
+        self.assertEqual(evaluator.formats_count, 0)
+        self.assertEqual(evaluator.json_count, 0)
+        self.assertEqual(evaluator.tei_count, 0)
+        self.assertEqual(evaluator.ontolex_count, 0)
 
 
 class TestDefinitionOfSenses(unittest.TestCase):
@@ -105,7 +180,7 @@ class TestDefinitionOfSenses(unittest.TestCase):
             entry_json = json.load(f)
 
             entry: JsonEntry = JsonEntry(entry_json)
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, None)
 
         evaluator.reset()
 
@@ -118,7 +193,7 @@ class TestDefinitionOfSenses(unittest.TestCase):
         with open("test/data/entries.json") as f:
             entry_json = json.load(f)
             entry: JsonEntry = JsonEntry(entry_json)
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, None)
 
         result = evaluator.result()
 
@@ -131,9 +206,8 @@ class TestDefinitionOfSenses(unittest.TestCase):
             entry: JsonEntry = JsonEntry(entry_json)
             evaluator = DefinitionOfSenseEvaluator()
 
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, None)
 
         self.assertEqual(evaluator.entry_count, 1)
         self.assertEqual(evaluator.senses_count, 1)
         self.assertEqual(evaluator.definition_count, 1)
-

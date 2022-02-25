@@ -5,6 +5,8 @@ import dataclasses
 import dateutil.parser
 from enum import Enum
 
+LANGUAGE_REGEX_PATTERN = "^\\w{2,3}$"
+
 
 class Metadata(object):
     def __init__(self, json):  # noqa: E501
@@ -72,7 +74,7 @@ class Metadata(object):
 
         if "sourceLanguage" in json:
             if (isinstance(json["sourceLanguage"], str) and
-                    re.match("^\\w{2,3}$", json["sourceLanguage"])):
+                    re.match(LANGUAGE_REGEX_PATTERN, json["sourceLanguage"])):
                 self.source_language = json["sourceLanguage"]
             else:
                 self.errors.append("Source language value was invalid: "
@@ -84,7 +86,7 @@ class Metadata(object):
 
         if "targetLanguage" in json:
             if (isinstance(json["targetLanguage"], list) and
-                    all(isinstance(x, str) and re.match("^\\w{2,3}$", x)
+                    all(isinstance(x, str) and re.match(LANGUAGE_REGEX_PATTERN, x)
                         for x in json["targetLanguage"])):
                 self.target_language = json["targetLanguage"]
             else:
@@ -228,7 +230,7 @@ class Metadata(object):
             if isinstance(json[prop], str):
                 try:
                     return dateutil.parser.parse(json[prop])
-                except: #TODO add specific Exception
+                except dateutil.ParserError:
                     self.errors.append(f"Value for {prop} was invalid: {json[prop]}")
             else:
                 self.errors.append(f"Value for {prop} was invalid: {json[prop]}")
@@ -296,7 +298,7 @@ class Entry(object):
 
         if "language" in json:
             if (isinstance(json["language"], str) and
-                    re.match("^\\w{2,3}$", json["language"])):
+                    re.match(LANGUAGE_REGEX_PATTERN, json["language"])):
                 self.language = json["language"]
             else:
                 self.errors.append("Language value was invalid: "

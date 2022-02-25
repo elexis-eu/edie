@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 
 from edie.model import Entry, JsonEntry
-from edie.vocabulary import SIZE_OF_DICTIONARY
+from edie.vocabulary import SIZE_OF_DICTIONARY, JSON_FORMAT, TEI_FORMAT, ONTOLEX_FORMAT, FORMATS_PER_ENTRY, \
+    JSON_SUPPORTED_ENTRIES, TEI_SUPPORTED_ENTRIES, ONTOLEX_SUPPORTED_ENTRIES, JSON_COVERAGE, TEI_COVERAGE, \
+    ONTOLEX_COVERAGE
 
 
 class MetadataMetric(ABC):
@@ -25,7 +27,6 @@ class PublisherEvaluator(MetadataMetric):
         self.publisher = ''
         self.publisher_info_present = False
 
-
     def analyze(self, metadata):
 
         if metadata.agent:
@@ -33,8 +34,7 @@ class PublisherEvaluator(MetadataMetric):
             self.publisher_info_present = True
 
     def reset(self):
-        self.publisher = ''
-        self.publisher_info_present = False
+        self.__init__()
 
     def result(self):
         if self.publisher_info_present:
@@ -48,15 +48,13 @@ class LicenseEvaluator(MetadataMetric):
         self.license = ''
         self.license_info_present = False
 
-
     def analyze(self, metadata):
         if metadata.license:
             self.license = metadata.license
             self.license_info_present = True
 
     def reset(self):
-        self.license = ''
-        self.license_info_present = False
+        self.__init__()
 
     def result(self):
         if self.license_info_present:
@@ -70,7 +68,6 @@ class MetadataQuantityEvaluator(MetadataMetric):
         self.metric_count = 0
         self.total_metrics = 0
 
-
     def analyze(self, metadata):
         for el in vars(metadata):
             self.total_metrics += 1
@@ -78,8 +75,7 @@ class MetadataQuantityEvaluator(MetadataMetric):
                 self.metric_count += 1
 
     def reset(self):
-        self.metric_count = 0
-        self.total_metrics = 0
+        self.__init__()
 
     def result(self):
         result = {}
@@ -93,7 +89,6 @@ class MetadataQuantityEvaluator(MetadataMetric):
 class RecencyEvaluator(MetadataMetric):
     def __init__(self):
         self.recency = None
-
 
     def analyze(self, metadata):
         if metadata.issued:
@@ -135,8 +130,7 @@ class ApiMetadataResponseEvaluator(ApiMetric):
                     self.languages[lang] += 1
 
     def reset(self):
-        self.dict_count = 0
-        self.languages = {}
+        self.__init__()
 
     def result(self):
         if self.dict_count > 0:
@@ -150,15 +144,15 @@ class EntryMetric(ABC):
        over the entries in a dictionary"""
 
     @abstractmethod
-    def accumulate(self, entry):
+    def accumulate(self, entry_details: object, entry_metadata: Entry) -> None:
         pass
 
     @abstractmethod
-    def result(self):
+    def result(self) -> dict:
         pass
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         pass
 
 
@@ -167,9 +161,9 @@ class FormsPerEntryMetric(EntryMetric):
         self.form_count = 0
         self.entry_count = 0
 
-    def accumulate(self, entry: Entry):
+    def accumulate(self, entry_details: Entry, entry_metadata):
         self.form_count += 1
-        self.form_count += len(entry.other_form)
+        self.form_count += len(entry_details.other_form)
         self.entry_count += 1
 
     def result(self):
@@ -179,8 +173,7 @@ class FormsPerEntryMetric(EntryMetric):
             return {}
 
     def reset(self):
-        self.form_count = 0
-        self.entry_count = 0
+        self.__init__()
 
 
 class AvgDefinitionLengthEvaluator(EntryMetric):
@@ -190,11 +183,11 @@ class AvgDefinitionLengthEvaluator(EntryMetric):
         self.total_definition_token_length = 0
         self.senses_count = 0
 
-    def accumulate(self, entry):
+    def accumulate(self, entry_details, entry_metadata):
         self.entry_count += 1
-        self.senses_count += len(entry.senses)
+        self.senses_count += len(entry_details.senses)
 
-        for sense in entry.senses:
+        for sense in entry_details.senses:
             if sense.definition is not None:
                 self.total_definition_char_length += len(sense.definition)
                 self.total_definition_token_length += len(sense.definition.split())
@@ -224,8 +217,8 @@ class NumberOfSensesEvaluator(EntryMetric):
         self.senses_count = 0
         self.entry_count = 0
 
-    def accumulate(self, entry: JsonEntry):
-        self.senses_count += len(entry.senses)
+    def accumulate(self, entry_details: JsonEntry, entry_metadata):
+        self.senses_count += len(entry_details.senses)
         self.entry_count += 1
 
     def result(self):
@@ -235,8 +228,47 @@ class NumberOfSensesEvaluator(EntryMetric):
             return {}
 
     def reset(self):
-        self.senses_count = 0
+        self.__init__()
+
+
+class SupportedFormatsEvaluator(EntryMetric):
+    def __init__(self):
+        self.json_count = 0
+        self.tei_count = 0
+        self.ontolex_count = 0
         self.entry_count = 0
+        self.formats_count = 0
+
+    def accumulate(self, entry_details: object, entry_metadata: Entry):
+        self.formats_count += len(entry_metadata.formats)
+        self.entry_count += 1
+        for metadata_format in entry_metadata.formats:
+            if metadata_format == JSON_FORMAT:
+                self.json_count += 1
+            elif metadata_format == TEI_FORMAT:
+                self.tei_count += 1
+            elif metadata_format == ONTOLEX_FORMAT:
+                self.ontolex_count += 1
+
+    def result(self) -> dict:
+        result = {}
+        if self.entry_count > 0:
+            result[FORMATS_PER_ENTRY] = self.formats_count / self.entry_count
+            result[JSON_SUPPORTED_ENTRIES] = self.json_count
+            result[TEI_SUPPORTED_ENTRIES] = self.tei_count
+            result[ONTOLEX_SUPPORTED_ENTRIES] = self.ontolex_count
+            result[JSON_COVERAGE] = self.json_count / self.entry_count
+            result[TEI_COVERAGE] = self.tei_count / self.entry_count
+            result[ONTOLEX_COVERAGE] = self.ontolex_count / self.entry_count
+
+        return result
+
+    def reset(self):
+        self.entry_count = 0
+        self.formats_count = 0
+        self.json_count = 0
+        self.tei_count = 0
+        self.ontolex_count = 0
 
 
 class DefinitionOfSenseEvaluator(EntryMetric):
@@ -245,17 +277,15 @@ class DefinitionOfSenseEvaluator(EntryMetric):
         self.definition_count = 0
         self.senses_count = 0
 
-    def accumulate(self, entry: JsonEntry):
-        self.senses_count += len(entry.senses)
+    def accumulate(self, entry_details: JsonEntry, entry_metadata):
+        self.senses_count += len(entry_details.senses)
         self.entry_count += 1
-        for sense in entry.senses:
+        for sense in entry_details.senses:
             if sense.definition is not None:
                 self.definition_count += 1
 
     def reset(self):
-        self.entry_count = 0
-        self.definition_count = 0
-        self.senses_count = 0
+        self.__init__()
 
     def result(self):
         result = {}

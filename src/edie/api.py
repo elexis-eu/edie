@@ -29,7 +29,7 @@ class ApiClient(object):
         response = requests.get(self.endpoint + "about/" + dictionary_id,
                                 headers=headers)
         if response.status_code != 200:
-            raise response.raise_for_status()
+            response.raise_for_status()
 
         return response.json()
 
@@ -51,7 +51,7 @@ class ApiClient(object):
 
         response = requests.get(url, headers=headers)
         if response.status_code == 404:
-            raise response.raise_for_status()
+            response.raise_for_status()
         return response.json()
 
     def json(self, dictionary_id, entry_id):

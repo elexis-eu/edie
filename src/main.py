@@ -56,7 +56,7 @@ if __name__ == "__main__":
         edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
                     entry_metrics_evaluators=entry_evaluators)
 
-        dictionaries: [Dictionary] = edie.load_dictionaries(test_dictionaries)
+        dictionaries: [Dictionary] = edie.load_dictionaries()
         edie.evaluate_metadata()
         edie.evaluate_entries(10)
         edie.aggregated_evaluation()

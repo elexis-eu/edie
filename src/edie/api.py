@@ -22,7 +22,7 @@ class ApiClient(object):
     def dictionaries(self):
         headers = self.__get_header()
         return requests.get(self.endpoint + "dictionaries",
-                            headers=headers).json()["dictionaries"]
+                            headers=headers).json()
 
     def about(self, dictionary_id):
         headers = self.__get_header()

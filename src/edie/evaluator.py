@@ -27,7 +27,7 @@ class Edie(object):
         self.report = {"endpoint": api_client.endpoint, "available": True, "dictionaries": {}}
 
     def load_dictionaries(self, dictionaries: [str] = None):
-        dictionary_ids = dictionaries if dictionaries is not None else self.lexonomy_client.dictionaries()
+        dictionary_ids = dictionaries if dictionaries is not None else self.lexonomy_client.dictionaries()["dictionaries"]
         sys.stderr.write("Evaluating %d dictionaries\n" % len(dictionary_ids))
         for dictionary_id in dictionary_ids:
             try:

@@ -91,7 +91,10 @@ class Edie(object):
     def _collect_entry_metrics(self, entry_report):
         for entry_metric in self.entry_metrics_evaluators:
             if entry_metric.result():
-                print(entry_metric, entry_metric.result())
+                sys.stderr.write(str(entry_metric))
+                sys.stderr.write(str(entry_metric.result()))
+                sys.stderr.write("\n")
+                sys.stderr.flush()
                 entry_report.update(entry_metric.result())
 
     def _handle_entries(self, dictionary, entries, entry_report, max_entries):

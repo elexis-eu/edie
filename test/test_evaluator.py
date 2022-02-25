@@ -33,7 +33,7 @@ class TestEdie(TestCase):
             self.dict_id_2 = 'DICT_ID_2'
             self.api_client = api_client
             self.api_client.about.return_value = json.load(about_file)
-            self.api_client.dictionaries.return_value = json.load(dictionaries_file)['dictionaries']
+            self.api_client.dictionaries.return_value = json.load(dictionaries_file)
             self.api_client.list.side_effect = self._list_request
             self.api_client.json.side_effect = self._entry_request
 

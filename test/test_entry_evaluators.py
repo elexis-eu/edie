@@ -30,7 +30,7 @@ class TestAverageDefinitionLength(unittest.TestCase):
 
             self.assertEqual(evaluator.senses_count, 2)
             self.assertGreater(evaluator.total_definition_char_length, 0)
-            self.assertEqual(evaluator.total_definition_token_length, 13)
+            self.assertEqual(evaluator.total_definition_token_length, 3)
             self.assertEqual(evaluator.entry_count, 1)
 
     def testResult(self):

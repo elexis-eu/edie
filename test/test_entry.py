@@ -10,11 +10,19 @@
 import unittest
 import json
 
+import pytest
+
 from edie.model import JsonEntry, Metadata, JsonApiResponse
 from edie.vocabulary import SIZE_OF_DICTIONARY
 from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, \
     RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, AvgDefinitionLengthEvaluator, \
     SizeOfDictionaryEvaluator
+
+
+@pytest.fixture(scope="class")
+def metadata_sample(request):
+    with open("test/data/metadata_sample.json") as sample:
+        request.cls.metadata_sample = json.load(sample)
 
 
 class TestEntry(unittest.TestCase):
@@ -32,7 +40,7 @@ class TestEntry(unittest.TestCase):
         # model = Entry()  # noqa: E501
         pass
 
-
+@pytest.mark.usefixtures("metadata_sample")
 class TestPublisherMetadata(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -48,10 +56,7 @@ class TestPublisherMetadata(unittest.TestCase):
 
     def test_reset(self) -> None:
         evaluator = PublisherEvaluator()
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
         evaluator.analyze(metadata_entry)
 
         evaluator.reset()
@@ -60,11 +65,7 @@ class TestPublisherMetadata(unittest.TestCase):
         self.assertFalse(evaluator.publisher_info_present)
 
     def test_result(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = PublisherEvaluator()
         evaluator.analyze(metadata_entry)
@@ -72,17 +73,14 @@ class TestPublisherMetadata(unittest.TestCase):
         self.assertIsNotNone(result['publisher'])
 
     def test_entry(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = PublisherEvaluator()
         evaluator.analyze(metadata_entry)
         self.assertTrue(evaluator.publisher_info_present, 'Publisher info missing')
 
 
+@pytest.mark.usefixtures("metadata_sample")
 class TestLicence(unittest.TestCase):
     def setUp(self) -> None:
         pass
@@ -96,11 +94,7 @@ class TestLicence(unittest.TestCase):
         self.assertFalse(evaluator.license_info_present)
 
     def test_reset(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
         evaluator = LicenseEvaluator()
         evaluator.analyze(metadata_entry)
 
@@ -109,11 +103,7 @@ class TestLicence(unittest.TestCase):
         self.assertFalse(evaluator.license_info_present)
 
     def test_result(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = LicenseEvaluator()
         evaluator.analyze(metadata_entry)
@@ -122,17 +112,14 @@ class TestLicence(unittest.TestCase):
         self.assertIsNotNone(result['license'])
 
     def test_entry(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = LicenseEvaluator()
         evaluator.analyze(metadata_entry)
         self.assertTrue(evaluator.license_info_present, 'License info missing')
 
 
+@pytest.mark.usefixtures("metadata_sample")
 class TestSizeOfDictionary(unittest.TestCase):
     def setUp(self) -> None:
         pass
@@ -146,21 +133,18 @@ class TestSizeOfDictionary(unittest.TestCase):
 
     def test_sizeOfDictionary(self):
         evaluator = SizeOfDictionaryEvaluator()
-        with open("test/data/sample.json") as sample_data:
-            evaluator.analyze(Metadata(json.load(sample_data)))
+        evaluator.analyze(Metadata(self.metadata_sample))
 
-            self.assertGreater(evaluator.entry_count, 0)
+        self.assertGreater(evaluator.entry_count, 0)
 
     def test_reset(self) -> None:
-        with open("test/data/sample.json") as sample_data:
-            entry_json = json.load(sample_data)
-            metadata_entry: Metadata = Metadata(entry_json)
-            evaluator = SizeOfDictionaryEvaluator()
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
+        evaluator = SizeOfDictionaryEvaluator()
 
-            evaluator.analyze(metadata_entry)
+        evaluator.analyze(metadata_entry)
 
-            evaluator.reset()
-            self.assertEqual(evaluator.entry_count, None)
+        evaluator.reset()
+        self.assertEqual(evaluator.entry_count, None)
 
     def test_result(self) -> None:
         evaluator = SizeOfDictionaryEvaluator()
@@ -170,7 +154,7 @@ class TestSizeOfDictionary(unittest.TestCase):
 
         self.assertIsNotNone(result[SIZE_OF_DICTIONARY])
 
-
+@pytest.mark.usefixtures("metadata_sample")
 class TestRecency(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -184,11 +168,7 @@ class TestRecency(unittest.TestCase):
         self.assertEqual(evaluator.recency, None)
 
     def test_reset(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
         evaluator = RecencyEvaluator()
         evaluator.analyze(metadata_entry)
 
@@ -196,11 +176,7 @@ class TestRecency(unittest.TestCase):
         self.assertEqual(evaluator.recency, None)
 
     def test_result(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = RecencyEvaluator()
         evaluator.analyze(metadata_entry)
@@ -208,11 +184,7 @@ class TestRecency(unittest.TestCase):
         self.assertIsNotNone(result['recency'])
 
     def test_entry(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = RecencyEvaluator()
         evaluator.analyze(metadata_entry)
@@ -220,6 +192,7 @@ class TestRecency(unittest.TestCase):
         self.assertLessEqual(evaluator.recency, 50, 'Dictionary is older than 50 years')
 
 
+@pytest.mark.usefixtures("metadata_sample")
 class TestMetadataQuantity(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -234,11 +207,7 @@ class TestMetadataQuantity(unittest.TestCase):
         self.assertEqual(evaluator.total_metrics, 0)
 
     def test_reset(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = MetadataQuantityEvaluator()
         evaluator.analyze(metadata_entry)
@@ -248,11 +217,7 @@ class TestMetadataQuantity(unittest.TestCase):
         self.assertEqual(evaluator.total_metrics, 0)
 
     def test_result(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = MetadataQuantityEvaluator()
         evaluator.analyze(metadata_entry)
@@ -263,11 +228,7 @@ class TestMetadataQuantity(unittest.TestCase):
         self.assertIsNotNone(result['total metrics'])
 
     def test_entry(self) -> None:
-        f = open("test/data/sample.json")
-        entry_json = json.load(f)
-        f.close()
-
-        metadata_entry: Metadata = Metadata(entry_json)
+        metadata_entry: Metadata = Metadata(self.metadata_sample)
 
         evaluator = MetadataQuantityEvaluator()
         evaluator.analyze(metadata_entry)

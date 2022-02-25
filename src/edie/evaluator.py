@@ -1,8 +1,10 @@
 import sys
 import pandas as pd
+import matplotlib.pyplot as plt
 from xml.etree.ElementTree import ParseError
-
+from pandas.plotting import parallel_coordinates
 from requests import HTTPError
+from requests.exceptions import JSONDecodeError
 
 from edie.api import ApiClient
 from edie.helper import validate_tei
@@ -27,18 +29,17 @@ class Edie(object):
         self.entries_limit = 100
 
     def load_dictionaries(self, dictionaries: [str] = None):
-        correct_dictionaries = [
-            "elexis-oeaw-jakob",
-            "elexis-oeaw-schranka",
-            "elexis-tcdh-bmz"
-        ]
-        dictionary_ids = dictionaries if dictionaries is not None else correct_dictionaries
+        dictionary_ids = dictionaries if dictionaries is not None else self.lexonomy_client.dictionaries()["dictionaries"]
         sys.stderr.write("Evaluating %d dictionaries\n" % len(dictionary_ids))
         for dictionary_id in dictionary_ids:
-            sys.stderr.write("Evaluating %s" % dictionary_id)
-            metadata = Metadata(self.lexonomy_client.about(dictionary_id))
-            dictionary = Dictionary(dictionary_id, metadata)
-            self.dictionaries.append(dictionary)
+            try:
+                sys.stderr.write("Loading Metadata of %s \n" % dictionary_id)
+                metadata = Metadata(self.lexonomy_client.about(dictionary_id))
+                dictionary = Dictionary(dictionary_id, metadata)
+                self.dictionaries.append(dictionary)
+            except HTTPError:
+                sys.stderr.write("Failed loading %s dictionary \n" % dictionary_id)
+
         return self.dictionaries
 
     def evaluate_metadata(self) -> None:
@@ -87,6 +88,8 @@ class Edie(object):
                 self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
             except ParseError as pe:
                 self._add_errors(entry_report, str(pe))
+            except JSONDecodeError as jde:
+                self._add_errors(entry_report, str(jde))
 
     def _collect_entry_metrics(self, entry_report):
         for entry_metric in self.entry_metrics_evaluators:
@@ -96,17 +99,18 @@ class Edie(object):
                 sys.stderr.write("\n")
                 sys.stderr.flush()
                 entry_report.update(entry_metric.result())
+            entry_metric.reset()
 
     def _handle_entries(self, dictionary, entries, entry_report, max_entries):
-        for entry in entries:
-            self.entries_offset += 1
-            if self.entries_offset > max_entries:
-                break
-            entry = Entry(entry)
-            if entry.errors:
-                self._add_errors(entry_report, entry.errors)
-            else:
-                self._entry_report(dictionary.id, entry_report, entry)
+            for entry in entries:
+                self.entries_offset += 1
+                if self.entries_offset > max_entries:
+                    break
+                entry = Entry(entry)
+                if entry.errors:
+                    self._add_errors(entry_report, entry.errors)
+                else:
+                    self._entry_report(dictionary.id, entry_report, entry)
 
     def evaluation_report(self):
         return self.report
@@ -124,16 +128,29 @@ class Edie(object):
     def entry_report(self, dictionary_id):
         return self.report['dictionaries'][dictionary_id]['entry_report']
 
+    def visualize(self):
+        df = self.entry_evaluation_report_as_dataframe().drop('errors', axis=1)
+        df = df.apply(lambda x: x / x.max(), axis=0)
+        df['dict_type'] = 0
+        parallel_coordinates(df, "dict_type", axvlines=True)
+        plt.show()
+
     def _entry_report(self, dictionary_id: str, entry_report: dict, entry: Entry):
         retrieved_entry: JsonEntry = self._retrieve_entry(dictionary_id, entry)
         if retrieved_entry is not None:
             if retrieved_entry.errors:
                 self._add_errors(entry_report, retrieved_entry.errors)
             self._run_entry_metrics_evaluators(retrieved_entry, entry)
+        else: #TODO: handle None case
+            pass
 
     def _retrieve_entry(self, dictionary_id, entry: Entry) -> JsonEntry:
         if "json" in entry.formats:
-            return JsonEntry(self.lexonomy_client.json(dictionary_id, entry.id))
+            try:
+                return JsonEntry(self.lexonomy_client.json(dictionary_id, entry.id))
+            except JSONDecodeError as jde:
+                raise JSONDecodeError("Error parsing json response %s: %s" % (entry.id, str(jde)))
+
         elif "tei" in entry.formats:
             tei_entry = self.lexonomy_client.tei(dictionary_id, entry.id)
             try:

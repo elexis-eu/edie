@@ -1,0 +1,13 @@
+[
+  {
+    "release": "PRIVATE",
+    "language": "de",
+    "formats": [
+      "tei",
+      "json",
+      "ontolex"
+    ],
+    "id": "16656",
+    "lemma": "a"
+  }
+]

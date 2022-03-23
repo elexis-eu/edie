@@ -22,7 +22,9 @@ VERSION = "1.0.0"
 REQUIRES = [
   "urllib3 >= 1.25.3",
   "python-dateutil",
-    "requests"
+  "requests >= 2.26.0",
+  "pandas >= 1.1.5",
+  "matplotlib>=3.5.1"
 ]
 
 setup(

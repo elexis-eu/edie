@@ -22,7 +22,7 @@ jobs:
           python -m pip install pytest
       - name: Install dependencies
         run: |
-          python setup.py install --user
+          python -m pip install . --user
       - name: Run pytest
         run: |
           python -m pytest

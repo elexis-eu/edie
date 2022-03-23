@@ -119,13 +119,22 @@ class LexonomyAboutDictEvaluator(ApiMetric):
         self.metrics = 0
         self.target_language = None
         self.source_language = None
+        self.genre = None
+        self.title = None
 
     def analyze(self, api_response):
-        if api_response.source_language!='null':
-            self.source_language = api_response.source_language
+
+
+        self.genre = api_response.genre
+
+        self.title = api_response.title
+
+        #if api_response.source_language!='null':
+        self.source_language = api_response.source_language
             
-        if api_response.target_language!='null':
-            self.target_language = api_response.target_language
+        #if api_response.target_language!='null':
+        self.target_language = api_response.target_language
+
 
         for el in vars(api_response):
             if vars(api_response)[el] != None:
@@ -139,11 +148,15 @@ class LexonomyAboutDictEvaluator(ApiMetric):
     
     def result(self):
         result = {}
+        if self.title:
+            result['title'] = self.title
+        if self.genre:
+            result['genre'] = self.genre
         if self.source_language:
-            result['source language']=self.source_language
+            result['source language'] = self.source_language
         if self.target_language:
-            result['target language']=self.target_language
-        if self.metrics>0:
+            result['target language'] = self.target_language
+        if self.metrics > 0:
             result['total metric count'] = self.metrics
 
         return result

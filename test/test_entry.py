@@ -14,6 +14,7 @@ import json
 from edie.model import JsonEntry, Metadata, Entry, JsonApiResponse
 from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, LexonomyAboutDictEvaluator
 from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator,AvgDefinitionLengthEvaluator
+from helpers.visualization import draw_line_graph
 
 class TestEntry(unittest.TestCase):
     """Entry unit test stubs"""
@@ -375,6 +376,70 @@ class TestMetadataQuantity(unittest.TestCase):
 from edie.api import ApiClient
 api = ApiClient(endpoint='http://lexonomy.elex.is/',api_key='GXCQJ6S2FZUATM5Z2S0MGZ7XOMXKUFNP')
 
+
+
+
+class TestSizePerAggregated(unittest.TestCase):
+    def setUp(self) -> None:
+        pass
+
+    def tearDown(self) -> None:
+        pass
+
+    def test_entry(self, dic='elexis-ibl-synonyms',params=['language','genre']) -> None:
+
+        about = api.about(dictionary_id=dic)
+
+        metadata_entry: Metadata = Metadata(about)
+
+        src_lang = metadata_entry.source_language
+        trg_lang = metadata_entry.target_language
+        genre = metadata_entry.genre
+
+        f = open("/Users/lenka/Desktop/work/edie/test/data/dictionaries.json")
+        entry_json = json.load(f)
+        f.close()
+        count = 0
+        size = 0
+        dictionaries = {}
+
+        for d in entry_json['dictionaries']:
+            # todo: avoid api call for each dictionary id
+            metadata: Metadata = Metadata(api.about(dictionary_id=d))
+
+            if ('language' in params and 'genre' in params):
+                if metadata.source_language==src_lang and metadata.genre==genre:
+                    count+=1
+                    size+=metadata.entryCount
+                    dictionaries[d]=metadata.entryCount
+
+            elif ('language' in params and metadata.source_language==src_lang)\
+                    or ('genre' in params and metadata.genre==genre):
+                count+=1
+                size+=metadata.entryCount
+                dictionaries[d]=metadata.entryCount
+
+
+        #print('total ',count,size)
+        avg_size = size/count
+        #print('average ',avg_size)
+
+
+        current = metadata_entry.entryCount
+        hi = max(dictionaries.values())
+        lo = min(dictionaries.values())
+        x = [hi, current, avg_size, lo, 0]
+
+
+        #draw_line_graph(x, dic)
+
+
+        assert(metadata_entry.entryCount>avg_size)
+
+
+
+
+
 class TestLexonomyAboutDict(unittest.TestCase):
     def setUp(self) -> None:
         pass
@@ -389,26 +454,53 @@ class TestLexonomyAboutDict(unittest.TestCase):
         self.assertIsNone(evaluator.target_language, 0)
 
     def test_entry(self):
-        f = open("test/data/dictionaries.json")
+        f = open("/Users/lenka/Desktop/work/edie/test/data/dictionaries.json")
         entry_json = json.load(f)
         f.close()
 
-        for dict in entry_json['dictionaries'][:10]:
+        source_lang = {}
+        target_lang = {}
+
+        for dict in entry_json['dictionaries']:
+            print(dict)
             about = api.about(dictionary_id=dict)
 
             metadata_entry: Metadata = Metadata(about)
 
             evaluator = LexonomyAboutDictEvaluator()
             evaluator.analyze(metadata_entry)
-            # print(evaluator.result())
+            print(dict,evaluator.result(),'\n')
+            #print(metadata_entry.errors)
 
             try:
                 self.assertIsNotNone(evaluator.source_language,msg='missing source language '+dict)
+                if evaluator.source_language not in source_lang:
+                    source_lang[evaluator.source_language]=[dict]
+                else:
+                    source_lang[evaluator.source_language].append(dict)
+
                 self.assertIsNotNone(evaluator.target_language,msg='missing target language '+dict)
+                if evaluator.target_language not in target_lang:
+                    target_lang[evaluator.target_language]=[dict]
+                else:
+                    target_lang[evaluator.target_language].append(dict)
+                    
                 self.assertGreater(evaluator.metrics,0)
 
             except:
                 print('assertion failed')
+
+        for lang in source_lang:
+            print(lang, len(source_lang[lang]))
+            for el in source_lang[lang]:
+                print(el)
+       
+        for lang in target_lang:
+            print(lang, len(target_lang[lang]))
+            for el in target_lang[lang]:
+                print(el)
+       
+        print(target_lang)
 
 
     def test_result(self):

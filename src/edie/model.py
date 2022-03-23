@@ -56,6 +56,9 @@ class Metadata(object):
         """
         self.errors = []
 
+        if "entryCount" in json:
+            self.entryCount = json["entryCount"]
+
         if "release" in json:
             if json["release"] in ["PUBLIC", "NONCOMMERCIAL", "RESEARCH", "PRIVATE"]:
                 self.release = json["release"]

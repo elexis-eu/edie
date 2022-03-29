@@ -377,7 +377,7 @@ class TestMetadataQuantity(unittest.TestCase):
 from edie.api import ApiClient
 api = ApiClient(endpoint='http://lexonomy.elex.is/',api_key='GXCQJ6S2FZUATM5Z2S0MGZ7XOMXKUFNP')
 
-
+from edie.vocabulary import SIZE_OF_DICTIONARY, AGGREGATION_METRICS, DICTIONARY_SIZE
 
 
 class TestEdie(unittest.TestCase):
@@ -388,8 +388,9 @@ class TestEdie(unittest.TestCase):
         pass
 
     def test_aggregated_evaluation(self) -> None:
-        edie = Edie(api_client=api)
+        edie = Edie(api_client=api, entry_metrics_evaluators=[SizeOfDictionaryEvaluator()])
         edie.load_dictionaries(testing=True)
+        edie.evaluate_entries()
         report = edie.aggregated_evaluation()
         #print(report)
 

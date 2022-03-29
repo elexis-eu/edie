@@ -10,17 +10,17 @@
 import unittest
 import json
 
-from edie.model import JsonEntry, Metadata, Entry, JsonApiResponse
-from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, LexonomyAboutDictEvaluator
-from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator,AvgDefinitionLengthEvaluator
-from helpers.visualization import draw_line_graph
+
 import pytest
 
 from edie.model import JsonEntry, Metadata, JsonApiResponse
 from edie.vocabulary import SIZE_OF_DICTIONARY
 from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, \
     RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, AvgDefinitionLengthEvaluator, \
-    SizeOfDictionaryEvaluator
+    SizeOfDictionaryEvaluator, LexonomyAboutDictEvaluator
+from edie.evaluator import Edie
+
+
 
 
 @pytest.fixture(scope="class")
@@ -380,63 +380,33 @@ api = ApiClient(endpoint='http://lexonomy.elex.is/',api_key='GXCQJ6S2FZUATM5Z2S0
 
 
 
-class TestSizePerAggregated(unittest.TestCase):
+class TestEdie(unittest.TestCase):
     def setUp(self) -> None:
         pass
 
     def tearDown(self) -> None:
         pass
 
-    def test_entry(self, dic='elexis-ibl-synonyms',params=['language','genre']) -> None:
+    def test_aggregated_evaluation(self) -> None:
+        edie = Edie(api_client=api)
+        edie.load_dictionaries()
+        report = edie.aggregated_evaluation()
+        #print(report)
 
-        about = api.about(dictionary_id=dic)
+        assert ('min' in report)
+        assert ('max' in report)
+        assert (report['max']>=report['min'])
 
-        metadata_entry: Metadata = Metadata(about)
+    def test_aggregated_evaluation_parametrized(self) -> None:
+        sample_dict = 'elexis-kd-arfr'
+        about_dict = Metadata(api.about(sample_dict))
+        genre = about_dict.genre
 
-        src_lang = metadata_entry.source_language
-        trg_lang = metadata_entry.target_language
-        genre = metadata_entry.genre
+        edie = Edie(api_client=api)
+        edie.load_dictionaries(genre=genre)
+        report = edie.aggregated_evaluation()
 
-        f = open("/Users/lenka/Desktop/work/edie/test/data/dictionaries.json")
-        entry_json = json.load(f)
-        f.close()
-        count = 0
-        size = 0
-        dictionaries = {}
-
-        for d in entry_json['dictionaries']:
-            # todo: avoid api call for each dictionary id
-            metadata: Metadata = Metadata(api.about(dictionary_id=d))
-
-            if ('language' in params and 'genre' in params):
-                if metadata.source_language==src_lang and metadata.genre==genre:
-                    count+=1
-                    size+=metadata.entryCount
-                    dictionaries[d]=metadata.entryCount
-
-            elif ('language' in params and metadata.source_language==src_lang)\
-                    or ('genre' in params and metadata.genre==genre):
-                count+=1
-                size+=metadata.entryCount
-                dictionaries[d]=metadata.entryCount
-
-
-        #print('total ',count,size)
-        avg_size = size/count
-        #print('average ',avg_size)
-
-
-        current = metadata_entry.entryCount
-        hi = max(dictionaries.values())
-        lo = min(dictionaries.values())
-        x = [hi, current, avg_size, lo, 0]
-
-
-        #draw_line_graph(x, dic)
-
-
-        assert(metadata_entry.entryCount>avg_size)
-
+        assert (about_dict.entry_count >= report['min'])
 
 
 
@@ -455,22 +425,19 @@ class TestLexonomyAboutDict(unittest.TestCase):
         self.assertIsNone(evaluator.target_language, 0)
 
     def test_entry(self):
-        f = open("/Users/lenka/Desktop/work/edie/test/data/dictionaries.json")
-        entry_json = json.load(f)
-        f.close()
 
         source_lang = {}
         target_lang = {}
 
-        for dict in entry_json['dictionaries']:
-            print(dict)
+        for dict in api.dictionaries():
+
             about = api.about(dictionary_id=dict)
 
             metadata_entry: Metadata = Metadata(about)
 
             evaluator = LexonomyAboutDictEvaluator()
             evaluator.analyze(metadata_entry)
-            print(dict,evaluator.result(),'\n')
+            #print(dict,evaluator.result(),'\n')
             #print(metadata_entry.errors)
 
             try:
@@ -491,6 +458,8 @@ class TestLexonomyAboutDict(unittest.TestCase):
             except:
                 print('assertion failed')
 
+
+        '''
         for lang in source_lang:
             print(lang, len(source_lang[lang]))
             for el in source_lang[lang]:
@@ -500,16 +469,13 @@ class TestLexonomyAboutDict(unittest.TestCase):
             print(lang, len(target_lang[lang]))
             for el in target_lang[lang]:
                 print(el)
-
-        print(target_lang)
+        '''
 
 
     def test_result(self):
-        f = open("test/data/dictionaries.json")
-        entry_json = json.load(f)
-        f.close()
 
-        for dict in entry_json['dictionaries'][:10]:
+
+        for dict in api.dictionaries()[:10]:
             about = api.about(dictionary_id=dict)
 
             metadata_entry: Metadata = Metadata(about)
@@ -525,11 +491,9 @@ class TestLexonomyAboutDict(unittest.TestCase):
             # print(evaluator.result())
 
     def test_reset(self):
-        f = open("test/data/dictionaries.json")
-        entry_json = json.load(f)
-        f.close()
 
-        for dict in entry_json['dictionaries'][:10]:
+
+        for dict in api.dictionaries()[:10]:
             about = api.about(dictionary_id=dict)
 
             metadata_entry: Metadata = Metadata(about)

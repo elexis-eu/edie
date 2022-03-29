@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from xml.etree.ElementTree import ParseError
 from pandas.plotting import parallel_coordinates
 from requests import HTTPError
-from requests.exceptions import JSONDecodeError
+from requests.exceptions import ContentDecodingError #JSONDecodeError ?
 
 from edie.api import ApiClient
 from edie.helper import validate_tei
@@ -14,6 +14,15 @@ from metrics.base import MetadataMetric, EntryMetric
 
 
 class Edie(object):
+
+    '''
+    TODO:
+    - parametri za izbor recnika (language & genre)
+    - drugi aspekti sem entry count?
+    - testovi za edie
+    -
+    '''
+
     def __init__(self, api_client, metadata_metrics_evaluators: [MetadataMetric] = None,
                  entry_metrics_evaluators: [EntryMetric] = None):
         self.lexonomy_client: ApiClient = api_client
@@ -28,13 +37,16 @@ class Edie(object):
         self.entries_offset = 0
         self.entries_limit = 100
 
-    def load_dictionaries(self, dictionaries: [str] = None):
+    def load_dictionaries(self, dictionaries: [str] = None, genre: str = None, language: str = None):
         dictionary_ids = dictionaries if dictionaries is not None else self.lexonomy_client.dictionaries()["dictionaries"]
         sys.stderr.write("Evaluating %d dictionaries\n" % len(dictionary_ids))
         for dictionary_id in dictionary_ids:
             try:
                 sys.stderr.write("Loading Metadata of %s \n" % dictionary_id)
                 metadata = Metadata(self.lexonomy_client.about(dictionary_id))
+                if (genre and metadata.genre!=genre) or \
+                        (language and (metadata.source_language!=language or metadata.target_language!=language)):
+                    continue
                 dictionary = Dictionary(dictionary_id, metadata)
                 self.dictionaries.append(dictionary)
             except HTTPError:
@@ -88,7 +100,7 @@ class Edie(object):
                 self._add_errors(entry_report, f'Failed to retrieve lemmas for dictionary {dictionary.id}')
             except ParseError as pe:
                 self._add_errors(entry_report, str(pe))
-            except JSONDecodeError as jde:
+            except ContentDecodingError as jde:
                 self._add_errors(entry_report, str(jde))
 
     def _collect_entry_metrics(self, entry_report):
@@ -148,8 +160,8 @@ class Edie(object):
         if "json" in entry.formats:
             try:
                 return JsonEntry(self.lexonomy_client.json(dictionary_id, entry.id))
-            except JSONDecodeError as jde:
-                raise JSONDecodeError("Error parsing json response %s: %s" % (entry.id, str(jde)))
+            except ContentDecodingError as jde:
+                raise ContentDecodingError("Error parsing json response %s: %s" % (entry.id, str(jde)))
 
         elif "tei" in entry.formats:
             tei_entry = self.lexonomy_client.tei(dictionary_id, entry.id)

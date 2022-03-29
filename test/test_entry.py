@@ -389,7 +389,7 @@ class TestEdie(unittest.TestCase):
 
     def test_aggregated_evaluation(self) -> None:
         edie = Edie(api_client=api)
-        edie.load_dictionaries()
+        edie.load_dictionaries(testing=True)
         report = edie.aggregated_evaluation()
         #print(report)
 

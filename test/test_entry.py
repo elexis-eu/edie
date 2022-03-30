@@ -18,9 +18,6 @@ from edie.vocabulary import SIZE_OF_DICTIONARY
 from metrics.base import NumberOfSensesEvaluator, PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, \
     RecencyEvaluator, ApiMetadataResponseEvaluator, DefinitionOfSenseEvaluator, AvgDefinitionLengthEvaluator, \
     SizeOfDictionaryEvaluator, LexonomyAboutDictEvaluator
-from edie.evaluator import Edie
-
-
 
 
 @pytest.fixture(scope="class")
@@ -376,39 +373,6 @@ class TestMetadataQuantity(unittest.TestCase):
 
 from edie.api import ApiClient
 api = ApiClient(endpoint='http://lexonomy.elex.is/',api_key='GXCQJ6S2FZUATM5Z2S0MGZ7XOMXKUFNP')
-
-from edie.vocabulary import SIZE_OF_DICTIONARY, AGGREGATION_METRICS, DICTIONARY_SIZE
-
-
-class TestEdie(unittest.TestCase):
-    def setUp(self) -> None:
-        pass
-
-    def tearDown(self) -> None:
-        pass
-
-    def test_aggregated_evaluation(self) -> None:
-        edie = Edie(api_client=api, entry_metrics_evaluators=[SizeOfDictionaryEvaluator()])
-        edie.load_dictionaries(testing=True)
-        edie.evaluate_entries()
-        report = edie.aggregated_evaluation()
-        #print(report)
-
-        assert ('min' in report)
-        assert ('max' in report)
-        assert (report['max']>=report['min'])
-
-    def test_aggregated_evaluation_parametrized(self) -> None:
-        sample_dict = 'elexis-kd-arfr'
-        about_dict = Metadata(api.about(sample_dict))
-        genre = about_dict.genre
-
-        edie = Edie(api_client=api)
-        edie.load_dictionaries(genre=genre)
-        report = edie.aggregated_evaluation()
-
-        assert (about_dict.entry_count >= report['min'])
-
 
 
 

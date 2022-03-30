@@ -51,7 +51,7 @@ class Edie(object):
                 self.dictionaries.append(dictionary)
 
                 if testing:
-                    if len(self.dictionaries)>5:
+                    if len(self.dictionaries)>testing:
                         break
 
             except HTTPError:

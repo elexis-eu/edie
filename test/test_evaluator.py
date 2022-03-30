@@ -21,16 +21,16 @@ class TestEdie(TestCase):
 
     def _list_request(self, dict_id, limit, offset):
         if dict_id == 'DICT_ID_1':
-            with open("data/entries_list.json") as sample:
+            with open("test/data/entries_list.json") as sample:
                 return json.load(sample)
         else:
-            with open("data/entries_list_2.json") as sample:
+            with open("test/data/entries_list_2.json") as sample:
                 return json.load(sample)
 
     @patch('edie.api.ApiClient')
     def setUp(self, api_client) -> None:
-        with open('data/dictionaries.json') as dictionaries_file, open(
-                'data/about_with_error.json') as about_file:
+        with open('test/data/dictionaries.json') as dictionaries_file, open(
+                'test/data/about_with_error.json') as about_file:
             self.dict_id_1 = 'DICT_ID_1'
             self.dict_id_2 = 'DICT_ID_2'
             self.api_client = api_client
@@ -153,7 +153,7 @@ class TestEdie(TestCase):
             self.assertIn('formsPerEntry', df.columns)
 
     def test_metadata_report_to_dataframe(self):
-        with open("data/end_report.json") as report_file:
+        with open("test/data/end_report.json") as report_file:
             end_report = json.load(report_file)
             edie = Edie(self.api_client)
             edie.report = end_report

@@ -62,7 +62,8 @@ class TestDefinitionOfSenses(unittest.TestCase):
         entry_json = json.load(f)
         f.close()
         entry: JsonEntry = JsonEntry(entry_json)
-        evaluator.accumulate(entry)
+        metadata: Metadata = Metadata(entry_json)
+        evaluator.accumulate(entry, metadata)
 
         evaluator.reset()
 
@@ -76,7 +77,8 @@ class TestDefinitionOfSenses(unittest.TestCase):
         entry_json = json.load(f)
         f.close()
         entry: JsonEntry = JsonEntry(entry_json)
-        evaluator.accumulate(entry)
+        metadata: Metadata = Metadata(entry_json)
+        evaluator.accumulate(entry, metadata)
 
         result = evaluator.result()
 
@@ -88,9 +90,11 @@ class TestDefinitionOfSenses(unittest.TestCase):
             entry_json = json.load(f)
             f.close()
             entry: JsonEntry = JsonEntry(entry_json)
+            metadata: Metadata = Metadata(entry_json)
+
             evaluator = DefinitionOfSenseEvaluator()
 
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, metadata)
 
             self.assertEqual(evaluator.entry_count, 1)
             self.assertEqual(evaluator.senses_count, 1)
@@ -116,9 +120,11 @@ class TestAverageDefinitionLength(unittest.TestCase):
         with open("test/data/entries_2_senses.json") as f:
             entry_json = json.load(f)
             entry: JsonEntry = JsonEntry(entry_json)
+            metadata: Metadata = Metadata(entry_json)
+
             evaluator = AvgDefinitionLengthEvaluator()
 
-            evaluator.accumulate(entry)
+            evaluator.accumulate(entry, metadata)
 
             self.assertEqual(evaluator.senses_count, 2)
             self.assertGreater(evaluator.total_definition_char_length, 0)

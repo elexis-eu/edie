@@ -7,7 +7,7 @@ def export_datframe():
     all_langs = {}
 
     all_dicts = api.dictionaries()
-    print(all_dicts)
+    #print(all_dicts)
 
     for d in all_dicts['dictionaries']:
 

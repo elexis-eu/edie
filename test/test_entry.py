@@ -135,8 +135,10 @@ class TestAverageDefinitionLength(unittest.TestCase):
         f = open("test/data/entries_2_senses.json")
         entry_json = json.load(f)
         entry: JsonEntry = JsonEntry(entry_json)
+        metadata: Metadata = Metadata(entry_json)
+
         evaluator = AvgDefinitionLengthEvaluator()
-        evaluator.accumulate(entry)
+        evaluator.accumulate(entry, metadata)
 
         result = evaluator.result()
 
@@ -149,8 +151,9 @@ class TestAverageDefinitionLength(unittest.TestCase):
         f = open("test/data/entries_2_senses.json")
         entry_json = json.load(f)
         entry: JsonEntry = JsonEntry(entry_json)
+        metadata: Metadata = Metadata(entry_json)
         evaluator = AvgDefinitionLengthEvaluator()
-        evaluator.accumulate(entry)
+        evaluator.accumulate(entry, metadata)
 
         result = evaluator.reset()
 
@@ -173,11 +176,12 @@ class TestNumberOfSenses(unittest.TestCase):
         entry_json = json.load(f)
         f.close()
 
-        entry: JsonEntry = JsonEntry(entry_json) # TODO: should be Entry()
+        entry: JsonEntry = JsonEntry(entry_json)
+        metadata: Metadata = Metadata(entry_json)
 
         evaluator = NumberOfSensesEvaluator()
 
-        evaluator.accumulate(entry)
+        evaluator.accumulate(entry, metadata)
 
         self.assertEqual(evaluator.senses_count, 1)
         self.assertEqual(evaluator.entry_count, 1)
@@ -403,7 +407,6 @@ class TestLexonomyAboutDict(unittest.TestCase):
         for dict in api.dictionaries():
 
             about = api.about(dictionary_id=dict)
-
             metadata_entry: Metadata = Metadata(about)
 
             evaluator = LexonomyAboutDictEvaluator()
@@ -430,23 +433,10 @@ class TestLexonomyAboutDict(unittest.TestCase):
                 print('assertion failed')
 
 
-        '''
-        for lang in source_lang:
-            print(lang, len(source_lang[lang]))
-            for el in source_lang[lang]:
-                print(el)
-
-        for lang in target_lang:
-            print(lang, len(target_lang[lang]))
-            for el in target_lang[lang]:
-                print(el)
-        '''
 
 
     def test_result(self):
-
-
-        for dict in api.dictionaries()[:10]:
+        for dict in api.dictionaries():
             about = api.about(dictionary_id=dict)
 
             metadata_entry: Metadata = Metadata(about)
@@ -462,9 +452,7 @@ class TestLexonomyAboutDict(unittest.TestCase):
             # print(evaluator.result())
 
     def test_reset(self):
-
-
-        for dict in api.dictionaries()[:10]:
+        for dict in api.dictionaries():
             about = api.about(dictionary_id=dict)
 
             metadata_entry: Metadata = Metadata(about)

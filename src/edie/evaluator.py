@@ -37,7 +37,7 @@ class Edie(object):
         self.entries_offset = 0
         self.entries_limit = 100
 
-    def load_dictionaries(self, dictionaries: [str] = None, genre: str = None, language: str = None, testing = False):
+    def load_dictionaries(self, dictionaries: [str] = None, genre: str = None, language: str = None, limit = False):
         dictionary_ids = dictionaries if dictionaries is not None else self.lexonomy_client.dictionaries()["dictionaries"]
         sys.stderr.write("Evaluating %d dictionaries\n" % len(dictionary_ids))
         for dictionary_id in dictionary_ids:
@@ -50,8 +50,8 @@ class Edie(object):
                 dictionary = Dictionary(dictionary_id, metadata)
                 self.dictionaries.append(dictionary)
 
-                if testing:
-                    if len(self.dictionaries)>testing:
+                if limit:
+                    if len(self.dictionaries)>limit:
                         break
 
             except HTTPError:

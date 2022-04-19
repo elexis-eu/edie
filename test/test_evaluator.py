@@ -1,4 +1,5 @@
 import json
+import os
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -6,7 +7,7 @@ from edie.evaluator import Edie
 from edie.model import Dictionary, Metadata
 from edie.vocabulary import AGGREGATION_METRICS, DICTIONARY_SIZE
 from metrics.base import AvgDefinitionLengthEvaluator, SizeOfDictionaryEvaluator
-from edie.api import ApiClient #separate api test?
+
 
 
 
@@ -29,6 +30,7 @@ class TestEdie(TestCase):
 
     @patch('edie.api.ApiClient')
     def setUp(self, api_client) -> None:
+        print(os.getcwd())
         with open('test/data/dictionaries.json') as dictionaries_file, open(
                 'test/data/about_with_error.json') as about_file:
             self.dict_id_1 = 'DICT_ID_1'
@@ -120,7 +122,7 @@ class TestEdie(TestCase):
             self.assertIsNotNone(edie.entry_report(self.dict_id_1)['errors'])
             self.assertIs(len(edie.entry_report(self.dict_id_1)['errors']), 5)
 
-    def test_entry_evluation_two_dictionaries(self):
+    def test_entry_evaluation_two_dictionaries(self):
         with open('test/data/about_with_error.json') as about_file:
             metadata_json = json.load(about_file)
             edie = Edie(self.api_client, entry_metrics_evaluators=[AvgDefinitionLengthEvaluator()])
@@ -179,34 +181,4 @@ class TestEdie(TestCase):
             self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['max'], 0)
             self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['mean'], 0)
             self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['median'], 0)
-
-
-    def test_aggregated_evaluation_api(self) -> None:
-
-        edie = Edie(self.api_client, metadata_metrics_evaluators=[SizeOfDictionaryEvaluator()])
-        edie.load_dictionaries(testing=50)
-        edie.evaluate_metadata()
-        #print(edie.metadata_evaluation_report_as_dataframe())
-
-        edie.aggregated_evaluation()
-        report = edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]
-        #print(report)
-
-        assert ('min' in report)
-        assert ('max' in report)
-        assert (report['max']>=report['min'])
-
-    def test_aggregated_evaluation_parametrized(self) -> None:
-
-        sample_dict = 'elexis-kd-arfr'
-        about_dict = Metadata(self.api_client.about(sample_dict))
-        genre = about_dict.genre
-
-        edie = Edie(self.api_client, metadata_metrics_evaluators=[SizeOfDictionaryEvaluator()])
-        edie.load_dictionaries(genre=genre)
-        edie.evaluate_metadata()
-        edie.aggregated_evaluation()
-        report = edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]
-
-        assert (about_dict.entry_count >= report['min'])
 

@@ -33,9 +33,9 @@ class TestApi(TestCase):
             genre = metadata.genre
 
             edie = Edie(self.api_client, metadata_metrics_evaluators=[SizeOfDictionaryEvaluator()])
-            edie.load_dictionaries(genre=genre)
+            edie.load_dictionaries(limit=50,genre=genre)
             edie.evaluate_metadata()
             edie.aggregated_evaluation()
             report = edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]
 
-            assert (about_dict.entry_count >= report['min'])
+            assert (metadata.entry_count >= report['min'])

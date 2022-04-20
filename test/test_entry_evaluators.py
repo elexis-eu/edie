@@ -5,9 +5,8 @@ import pytest
 from edie.model import JsonEntry, Entry
 from edie.vocabulary import FORMATS_PER_ENTRY, JSON_SUPPORTED_ENTRIES, TEI_SUPPORTED_ENTRIES, ONTOLEX_SUPPORTED_ENTRIES, \
     JSON_COVERAGE, TEI_COVERAGE, ONTOLEX_COVERAGE
-from metrics.base import AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
-    SupportedFormatsEvaluator
-
+from metrics.entry import AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator, SupportedFormatsEvaluator, \
+    DefinitionOfSenseEvaluator
 
 
 @pytest.fixture(scope="class")

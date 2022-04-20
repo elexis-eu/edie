@@ -616,7 +616,7 @@ class JsonForm(object):
 
         if "type" in json:
             if (isinstance(json["type"], str) and 
-                    json["type"] in ):["secondaryHeadword", "variant", "inflectedForm", "other"] 
+                    json["type"] in ["secondaryHeadword", "variant", "inflectedForm", "other"]):
                 self.type = json["type"]
             else:
                 self.errors.append("Bad type: " +

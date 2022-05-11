@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     if args.server:
         print("TODO: implement server mode")
-        app = create_app(edie, metadata_evaluators, entry_evaluators)
+        app = create_app()
         app.run()
     else:
         dictionaries: [Dictionary] = edie.load_dictionaries()

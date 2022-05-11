@@ -51,9 +51,8 @@ class TestEdie(TestCase):
         self.api_client.dictionaries.assert_not_called()
         self.api_client.about.assert_called_once_with(self.dict_id_1)
         self.assertEqual(len(response), 1)
-        self.assertEqual(len(edie.dictionaries), 1)
-        self.assertIsInstance(edie.dictionaries[0], Dictionary)
-        self.assertEqual(edie.dictionaries[0].id, self.dict_id_1)
+        self.assertIsInstance(response[0], Dictionary)
+        self.assertEqual(response[0].id, self.dict_id_1)
 
     def test_load_dictionaries(self):
         edie = Edie(self.api_client)
@@ -63,29 +62,28 @@ class TestEdie(TestCase):
         # api_client.dictionaries.assert_called_once()
         self.assertEqual(self.api_client.about.call_count, 2)
         self.assertEqual(len(response), 2)
-        self.assertEqual(len(edie.dictionaries), 2)
-        self.assertIsInstance(edie.dictionaries[0], Dictionary)
+        self.assertIsInstance(response[0], Dictionary)
 
     def test_metadata_with_errors_evaluation(self):
         dictionary_id = [self.dict_id_1]
         edie = Edie(self.api_client)
-        edie.load_dictionaries(dictionary_id)
+        dictionaries = edie.load_dictionaries(dictionary_id)
 
-        edie.evaluate_metadata()
+        report = edie.evaluate_metadata(dictionaries)
 
-        self.assertTrue(self.dict_id_1 in edie.report['dictionaries'])
-        self.assertTrue(edie.report['dictionaries'][self.dict_id_1]['metadata_report']['errors'])
+        self.assertTrue(self.dict_id_1 in report)
+        self.assertTrue(report[self.dict_id_1]['metadata_report']['errors'])
 
     @patch('metrics.metadata.RecencyEvaluator')
     def test_metadata_evaluation(self, recency_evaluator):
         recency_evaluator.result.return_value = {'recency': 100}
         dictionary_id = [self.dict_id_1]
         edie = Edie(self.api_client, metadata_metrics_evaluators=[recency_evaluator])
-        edie.load_dictionaries(dictionary_id)
+        dictionaries = edie.load_dictionaries(dictionary_id)
 
-        edie.evaluate_metadata()
+        report = edie.evaluate_metadata(dictionaries)
 
-        self.assertIsNotNone(edie.report['dictionaries'][self.dict_id_1]['metadata_report']['recency'])
+        self.assertIsNotNone(report[self.dict_id_1]['metadata_report']['recency'])
 
     @patch('metrics.entry.AvgDefinitionLengthEvaluator')
     def test_entry_evaluation(self, avg_def_evaluator):
@@ -97,14 +95,13 @@ class TestEdie(TestCase):
                                                      'DefinitionLengthPerSenseByCharacter': 35.5,
                                                      'DefinitionLengthPerSenseByToken': 6.5}
             edie = Edie(self.api_client, entry_metrics_evaluators=[avg_def_evaluator])
-            edie.dictionaries = [Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))]
 
-            edie.evaluate_entries()
+            report = edie.evaluate_entries([Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))])
 
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByCharacter'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByToken'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByCharacter'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByToken'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerEntryByCharacter'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerEntryByToken'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerSenseByCharacter'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerSenseByToken'])
 
     @patch('metrics.entry.AvgDefinitionLengthEvaluator')
     def test_entry_evaluation_with_errors(self, avg_def_evaluator):
@@ -113,38 +110,36 @@ class TestEdie(TestCase):
             self.api_client.list.return_value = "Not Json"
 
             edie = Edie(self.api_client, entry_metrics_evaluators=[avg_def_evaluator])
-            edie.dictionaries = [Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))]
 
-            edie.evaluate_entries()
+            report = edie.evaluate_entries([Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))])
 
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['errors'])
-            self.assertIs(len(edie.entry_report(self.dict_id_1)['errors']), 5)
+            self.assertIsNotNone(report[self.dict_id_1]['entry_report']['errors'])
+            self.assertIs(len(report[self.dict_id_1]['entry_report']['errors']), 5)
 
     def test_entry_evluation_two_dictionaries(self):
         with open('test/data/about_with_error.json') as about_file:
             metadata_json = json.load(about_file)
             edie = Edie(self.api_client, entry_metrics_evaluators=[AvgDefinitionLengthEvaluator()])
-            edie.dictionaries = [Dictionary('DICT_ID_1', metadata=Metadata(metadata_json)),
-                                 Dictionary('DICT_ID_2', metadata=Metadata(metadata_json))]
 
-            edie.evaluate_entries()
+            report =edie.evaluate_entries([Dictionary('DICT_ID_1', metadata=Metadata(metadata_json)),
+                                   Dictionary('DICT_ID_2', metadata=Metadata(metadata_json))]
+                                  )
 
-            self.assertEqual(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByCharacter'], 4)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByToken'], 1)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByCharacter'], 4)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByToken'], 1)
-            self.assertEqual(edie.entry_report(self.dict_id_2)['DefinitionLengthPerEntryByCharacter'], 14)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_2)['DefinitionLengthPerEntryByToken'], 3)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_2)['DefinitionLengthPerSenseByCharacter'], 7)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_2)['DefinitionLengthPerSenseByToken'], 1.5)
+            self.assertEqual(report[self.dict_id_1]['entry_report']['DefinitionLengthPerEntryByCharacter'], 4)
+            self.assertIsNotNone(report[self.dict_id_1]['entry_report']['DefinitionLengthPerEntryByToken'], 1)
+            self.assertIsNotNone(report[self.dict_id_1]['entry_report']['DefinitionLengthPerSenseByCharacter'], 4)
+            self.assertIsNotNone(report[self.dict_id_1]['entry_report']['DefinitionLengthPerSenseByToken'], 1)
+            self.assertEqual(report[self.dict_id_2]['entry_report']['DefinitionLengthPerEntryByCharacter'], 14)
+            self.assertIsNotNone(report[self.dict_id_2]['entry_report']['DefinitionLengthPerEntryByToken'], 3)
+            self.assertIsNotNone(report[self.dict_id_2]['entry_report']['DefinitionLengthPerSenseByCharacter'], 7)
+            self.assertIsNotNone(report[self.dict_id_2]['entry_report']['DefinitionLengthPerSenseByToken'], 1.5)
 
     def test_entry_report_to_dataframe(self):
         with open("test/data/end_report.json") as report_file:
             end_report = json.load(report_file)
             edie = Edie(self.api_client)
-            edie.report = end_report
 
-            df = edie.entry_evaluation_report_as_dataframe()
+            df = edie.entry_evaluation_report_as_dataframe(end_report)
 
             self.assertEqual(len(df.index), 6)
             self.assertEqual(len(df.columns), 9)
@@ -156,9 +151,8 @@ class TestEdie(TestCase):
         with open("test/data/end_report.json") as report_file:
             end_report = json.load(report_file)
             edie = Edie(self.api_client)
-            edie.report = end_report
 
-            df = edie.metadata_evaluation_report_as_dataframe()
+            df = edie.metadata_evaluation_report_as_dataframe(end_report)
 
             self.assertEqual(len(df.index), 6)
             self.assertEqual(len(df.columns), 4)
@@ -172,7 +166,7 @@ class TestEdie(TestCase):
             edie = Edie(self.api_client)
             edie.report = end_report
 
-            edie.aggregated_evaluation()
+            edie.aggregated_evaluation(end_report)
 
             self.assertIsNotNone(edie.report[AGGREGATION_METRICS])
             self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['min'], 0)

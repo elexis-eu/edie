@@ -20,7 +20,7 @@ from metrics.base import MetadataMetric, EntryMetric
 def create_app(edie: Edie, metadata_evaluators: [MetadataMetric], entry_evaluators: [EntryMetric], config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    app.evaluation_service = EvaluationService(edie)
+    app.evaluation_service = EvaluationService()
     app.executor = ThreadPoolExecutor(10)
 
     @app.route("/")

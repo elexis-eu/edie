@@ -1,25 +1,13 @@
-import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from threading import Thread
-from time import sleep
 
-import rq
 from flask import Flask, request
-from flask_executor import Executor
-from redis import Redis
 
-from edie.api import ApiClient
-from edie.config import Config
-from edie.evaluator import Edie
-from edie.model import Dictionary
 from edie.service import EvaluationService
-from metrics.base import MetadataMetric, EntryMetric
 
 
-def create_app(edie: Edie, metadata_evaluators: [MetadataMetric], entry_evaluators: [EntryMetric], config_class=Config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(config_class)
     app.evaluation_service = EvaluationService()
     app.executor = ThreadPoolExecutor(10)
 
@@ -29,9 +17,18 @@ def create_app(edie: Edie, metadata_evaluators: [MetadataMetric], entry_evaluato
 
     @app.route("/evaluations", methods=['POST', 'GET'])
     def evaluate():
-        evaluation_id: uuid.UUID = uuid.uuid4()
-        # job = app.task_queue.enqueue(app.evaluation_service.evaluate, evaluation_id)
-        app.executor.submit(app.evaluation_service.evaluate, evaluation_id)
-        return {'message': 'Accepted', 'evaluation_id': evaluation_id}, 202
+
+        if request.method == 'POST':
+            evaluation_id: uuid.UUID = uuid.uuid4()
+            app.executor.submit(app.evaluation_service.evaluate, evaluation_id, request.json['endpoint'], request.json['api-key'])
+            return {'message': 'Accepted', 'evaluation_id': evaluation_id}, 202
+
+    @app.route("/evaluations/<evaluation_id>", methods=['GET'])
+    def get_evaluation():
+        pass
+
+    @app.route("/evaluations/<evaluation_id>/<dictionary_id>", methods=['GET'])
+    def get_dictionary_evaluation():
+        pass
 
     return app

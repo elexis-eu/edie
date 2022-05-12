@@ -1,4 +1,9 @@
 import argparse
+import json
+import os
+import sys
+import uuid
+from datetime import datetime
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
@@ -53,17 +58,21 @@ if __name__ == "__main__":
         app = create_app()
         app.run()
     else:
-        dictionaries: [Dictionary] = edie.load_dictionaries()
-        edie.evaluate_metadata()
-        edie.evaluate_entries()
-        edie.aggregated_evaluation()
-        report = edie.evaluation_report()
+        #test_dictionaries = ["elexis-oeaw-schranka"]
+        dictionaries: [Dictionary] = edie.load_dictionaries(dictionaries_ids=test_dictionaries)
+        metadata_report = edie.evaluate_metadata(dictionaries)
+        entry_report = edie.evaluate_entries(dictionaries)
+        merged_report = edie.evaluation_report(entry_report, metadata_report)
+        final_report = edie.aggregated_evaluation(merged_report)
 
         for dictionary in report['dictionaries']:
-            print("Evaluation Result of Dictionary " + dictionary, end='\n')
-            print("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']), end='\n')
-            print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
-            print('\n')
+            sys.stdout.write("Evaluation Result of Dictionary " + dictionary)
+            sys.stdout.write("\n")
+            sys.stdout.write("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']))
+            sys.stdout.write("\n")
+            sys.stdout.write("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']))
+            sys.stdout.write('\n')
 
-        print("=== AGGREGATION METRICS ===")
-        print(report[AGGREGATION_METRICS])
+        sys.stdout.write("Aggregation Metrics:")
+        sys.stdout.write(final_report[AGGREGATION_METRICS])
+        sys.stderr.flush()

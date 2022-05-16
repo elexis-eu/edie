@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from datetime import datetime
+from pathlib import Path
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
@@ -41,11 +41,20 @@ class EvaluationService(object):
 
         sys.stderr.write('Writing to file...')
         sys.stderr.flush()
-        datetime_postfix = datetime.now().strftime("%y%m%d%H%M%S")
-        filename = self.save_path + str(evaluation_id) + '_' + datetime_postfix + '.json'
+        filename = self.save_path + str(evaluation_id) + '.json'
         os.makedirs(os.path.dirname(filename), exist_ok=True)
+
         with open(filename, 'w') as f:
             json.dump(final_report, f)
 
         sys.stdout.write('Evaluation complete.')
         sys.stdout.flush()
+
+    def get_evaluations(self):
+        evaluations = []
+        paths = sorted(Path(self.save_path).iterdir(), key=os.path.getmtime)
+        for p in paths:
+            with open(p, 'r') as f:
+                evaluations.append(json.load(f))
+
+        return evaluations

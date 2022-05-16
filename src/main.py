@@ -1,9 +1,5 @@
 import argparse
-import json
-import os
 import sys
-import uuid
-from datetime import datetime
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
@@ -59,7 +55,7 @@ if __name__ == "__main__":
         app.run()
     else:
         #test_dictionaries = ["elexis-oeaw-schranka"]
-        dictionaries: [Dictionary] = edie.load_dictionaries(dictionaries_ids=test_dictionaries)
+        dictionaries: [Dictionary] = edie.load_dictionaries()
         metadata_report = edie.evaluate_metadata(dictionaries)
         entry_report = edie.evaluate_entries(dictionaries)
         merged_report = edie.evaluation_report(entry_report, metadata_report)

@@ -22,6 +22,8 @@ def create_app():
             evaluation_id: uuid.UUID = uuid.uuid4()
             app.executor.submit(app.evaluation_service.evaluate, evaluation_id, request.json['endpoint'], request.json['api-key'])
             return {'message': 'Accepted', 'evaluation_id': evaluation_id}, 202
+        elif request.method == 'GET':
+            return {'evaluations': app.evaluation_service.get_evaluations()}, 200
 
     @app.route("/evaluations/<evaluation_id>", methods=['GET'])
     def get_evaluation():

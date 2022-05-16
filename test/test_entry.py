@@ -17,7 +17,7 @@ import json
 import pytest
 
 from edie.model import Metadata, JsonApiResponse
-from edie.vocabulary import SIZE_OF_DICTIONARY
+from edie.vocabulary import *
 from metrics.base import ApiMetadataResponseEvaluator
 from metrics.metadata import PublisherEvaluator, LicenseEvaluator, SizeOfDictionaryEvaluator, RecencyEvaluator, \
     MetadataQuantityEvaluator
@@ -75,7 +75,7 @@ class TestPublisherMetadata(unittest.TestCase):
         evaluator = PublisherEvaluator()
         evaluator.analyze(metadata_entry)
         result = evaluator.result()
-        self.assertIsNotNone(result['publisher'])
+        self.assertIsNotNone(result[PUBLISHER])
 
     def test_entry(self) -> None:
         metadata_entry: Metadata = Metadata(self.metadata_sample)
@@ -114,7 +114,7 @@ class TestLicence(unittest.TestCase):
         evaluator.analyze(metadata_entry)
         result = evaluator.result()
 
-        self.assertIsNotNone(result['license'])
+        self.assertIsNotNone(result[LICENSE])
 
     def test_entry(self) -> None:
         metadata_entry: Metadata = Metadata(self.metadata_sample)
@@ -187,7 +187,7 @@ class TestRecency(unittest.TestCase):
         evaluator = RecencyEvaluator()
         evaluator.analyze(metadata_entry)
         result = evaluator.result()
-        self.assertIsNotNone(result['recency'])
+        self.assertIsNotNone(result[RECENCY])
 
     def test_entry(self) -> None:
         metadata_entry: Metadata = Metadata(self.metadata_sample)
@@ -230,8 +230,8 @@ class TestMetadataQuantity(unittest.TestCase):
         # print(str(evaluator.metric_count) +'/'+str(evaluator.total_metrics))
         # TODO - what is the expected ratio?
         result = evaluator.result()
-        self.assertIsNotNone(result['metric count'])
-        self.assertIsNotNone(result['total metrics'])
+        self.assertIsNotNone(result[METADATA_NONEMPTY_FIELDS])
+        self.assertIsNotNone(result[METADATA_FIELDS])
 
     def test_entry(self) -> None:
         metadata_entry: Metadata = Metadata(self.metadata_sample)

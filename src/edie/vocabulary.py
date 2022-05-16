@@ -12,7 +12,19 @@ FORMATS_PER_ENTRY = 'formatsPerEntry'
 # REPORTING PROPERTIES
 AGGREGATION_METRICS = 'aggregationMetrics'
 DICTIONARY_SIZE = 'dictionarySize'
-
+FORMS_PER_ENTRY = 'formsPerEntry'
+DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER = 'definitionLengthPerEntryByCharacter'
+DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN = 'definitionLengthPerEntryByToken'
+DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER = 'definitionLengthPerSenseByCharacter'
+DEFINITION_LENGTH_PER_SENSE_BY_TOKEN= 'definitionLengthPerSenseByToken'
+SENSES_PER_ENTRY = 'sensesPerEntry'
+DEFINITIONS_PER_SENSE = 'definitionsPerSense'
+DEFINITIONS_PER_ENTRY = 'definitionsPerEntry'
+PUBLISHER = 'publisher'
+LICENSE = 'license'
+METADATA_FIELDS = 'metadataFields'
+METADATA_NONEMPTY_FIELDS = 'metadataNonemptyFields'
+RECENCY = 'recency'
 
 #ENTRY FORMATS
 ONTOLEX_FORMAT = 'ontolex'

@@ -12,8 +12,8 @@ def create_app():
     app.executor = ThreadPoolExecutor(10)
 
     @app.route("/")
-    def hello_world():
-        return "<p>Hello, World!</p>"
+    def home():
+        return "<p>This is Edie</p>"
 
     @app.route("/evaluations", methods=['POST', 'GET'])
     def evaluate():

@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from edie.evaluator import Edie
 from edie.model import Dictionary, Metadata
-from edie.vocabulary import AGGREGATION_METRICS, DICTIONARY_SIZE
+from edie.vocabulary import *
 from metrics.entry import AvgDefinitionLengthEvaluator
 
 
@@ -92,19 +92,19 @@ class TestEdie(TestCase):
         with open('test/data/about_with_error.json') as about_file:
             metadata_json = json.load(about_file)
 
-            avg_def_evaluator.result.return_value = {'DefinitionLengthPerEntryByCharacter': 71.0,
-                                                     'DefinitionLengthPerEntryByToken': 13.0,
-                                                     'DefinitionLengthPerSenseByCharacter': 35.5,
-                                                     'DefinitionLengthPerSenseByToken': 6.5}
+            avg_def_evaluator.result.return_value = {DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER: 71.0,
+                                                     DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN: 13.0,
+                                                     DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER: 35.5,
+                                                     DEFINITION_LENGTH_PER_SENSE_BY_TOKEN: 6.5}
             edie = Edie(self.api_client, entry_metrics_evaluators=[avg_def_evaluator])
             edie.dictionaries = [Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))]
 
             edie.evaluate_entries()
 
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByCharacter'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByToken'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByCharacter'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByToken'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_SENSE_BY_TOKEN])
 
     @patch('metrics.entry.AvgDefinitionLengthEvaluator')
     def test_entry_evaluation_with_errors(self, avg_def_evaluator):
@@ -129,14 +129,14 @@ class TestEdie(TestCase):
 
             edie.evaluate_entries()
 
-            self.assertEqual(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByCharacter'], 4)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerEntryByToken'], 1)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByCharacter'], 4)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1)['DefinitionLengthPerSenseByToken'], 1)
-            self.assertEqual(edie.entry_report(self.dict_id_2)['DefinitionLengthPerEntryByCharacter'], 14)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_2)['DefinitionLengthPerEntryByToken'], 3)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_2)['DefinitionLengthPerSenseByCharacter'], 7)
-            self.assertIsNotNone(edie.entry_report(self.dict_id_2)['DefinitionLengthPerSenseByToken'], 1.5)
+            self.assertEqual(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER], 4)
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN], 1)
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER], 4)
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1)[DEFINITION_LENGTH_PER_SENSE_BY_TOKEN], 1)
+            self.assertEqual(edie.entry_report(self.dict_id_2)[DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER], 14)
+            self.assertIsNotNone(edie.entry_report(self.dict_id_2)[DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN], 3)
+            self.assertIsNotNone(edie.entry_report(self.dict_id_2)[DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER], 7)
+            self.assertIsNotNone(edie.entry_report(self.dict_id_2)[DEFINITION_LENGTH_PER_SENSE_BY_TOKEN], 1.5)
 
     def test_entry_report_to_dataframe(self):
         with open("test/data/end_report.json") as report_file:

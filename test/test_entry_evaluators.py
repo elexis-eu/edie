@@ -3,8 +3,7 @@ import unittest
 import pytest
 
 from edie.model import JsonEntry, Entry
-from edie.vocabulary import FORMATS_PER_ENTRY, JSON_SUPPORTED_ENTRIES, TEI_SUPPORTED_ENTRIES, ONTOLEX_SUPPORTED_ENTRIES, \
-    JSON_COVERAGE, TEI_COVERAGE, ONTOLEX_COVERAGE
+from edie.vocabulary import *
 from metrics.entry import AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator, SupportedFormatsEvaluator, \
     DefinitionOfSenseEvaluator
 
@@ -60,10 +59,10 @@ class TestAverageDefinitionLength(unittest.TestCase):
 
             result = evaluator.result()
 
-        self.assertGreater(result['DefinitionLengthPerSenseByCharacter'], 0.0)
-        self.assertGreater(result['DefinitionLengthPerSenseByToken'], 0.0)
-        self.assertGreater(result['DefinitionLengthPerEntryByCharacter'], 0.0)
-        self.assertGreater(result['DefinitionLengthPerEntryByToken'], 0.0)
+        self.assertGreater(result[DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER], 0.0)
+        self.assertGreater(result[DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN], 0.0)
+        self.assertGreater(result[DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER], 0.0)
+        self.assertGreater(result[DEFINITION_LENGTH_PER_SENSE_BY_TOKEN], 0.0)
 
     def testReset(self):
         with open("test/data/entries_2_senses.json") as f:
@@ -196,8 +195,8 @@ class TestDefinitionOfSenses(unittest.TestCase):
 
         result = evaluator.result()
 
-        self.assertEqual(result['DefinitionPerSense'], 1.0)
-        self.assertEqual(result['DefinitionPerEntry'], 1.0)
+        self.assertEqual(result[DEFINITIONS_PER_SENSE], 1.0)
+        self.assertEqual(result[DEFINITIONS_PER_ENTRY], 1.0)
 
     def test_entry(self) -> None:
         with open("test/data/entries.json") as f:

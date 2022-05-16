@@ -33,7 +33,7 @@ class EvaluationService(object):
                     entry_metrics_evaluators=entry_evaluators)
 
         #test_dictionaries = ["elexis-oeaw-schranka"]
-        dictionaries: [Dictionary] = edie.load_dictionaries(test_dictionaries)
+        dictionaries: [Dictionary] = edie.load_dictionaries()
         metadata_report = edie.evaluate_metadata(dictionaries)
         entry_report = edie.evaluate_entries(dictionaries)
         merged_report = edie.evaluation_report(entry_report, metadata_report)
@@ -45,16 +45,27 @@ class EvaluationService(object):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         with open(filename, 'w') as f:
-            json.dump(final_report, f)
+            json.dump({'evaluation_id': str(evaluation_id), 'result': final_report}, f)
 
         sys.stdout.write('Evaluation complete.')
         sys.stdout.flush()
 
     def get_evaluations(self):
         evaluations = []
-        paths = sorted(Path(self.save_path).iterdir(), key=os.path.getmtime)
+        paths = sorted(Path(self.save_path).iterdir(), key=os.path.getmtime, reverse=True)
         for p in paths:
             with open(p, 'r') as f:
                 evaluations.append(json.load(f))
 
         return evaluations
+
+    def get_evaluation(self, evaluation_id):
+        for evaluation in self.get_evaluations():
+            if evaluation['evaluation_id'] == evaluation_id:
+                return evaluation['result']
+        return None
+
+    def get_dictionary_evaluation(self, evaluation_id, dictionary_id):
+        if dictionary_id not in self.get_evaluation(evaluation_id)['dictionaries'].keys():
+            return None
+        return self.get_evaluation(evaluation_id)['dictionaries'][dictionary_id]

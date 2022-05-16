@@ -10,7 +10,7 @@ import uuid
 
 from metrics.entry import FormsPerEntryMetric, AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator, \
     DefinitionOfSenseEvaluator
-from metrics.metadata import PublisherEvaluator, LicenseEvaluator, SizeOfDictionaryEvaluator, MetadataQuantityEvaluator, \
+from metrics.metadata import LicenseEvaluator, SizeOfDictionaryEvaluator, MetadataQuantityEvaluator, \
     RecencyEvaluator
 
 
@@ -23,7 +23,7 @@ class EvaluationService(object):
         sys.stdout.flush()
 
         api_instance = ApiClient(endpoint, api_key)
-        metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(),
+        metadata_evaluators = [LicenseEvaluator(), MetadataQuantityEvaluator(),
                                RecencyEvaluator(),
                                SizeOfDictionaryEvaluator()]
         entry_evaluators = [FormsPerEntryMetric(), NumberOfSensesEvaluator(), DefinitionOfSenseEvaluator(),
@@ -32,13 +32,11 @@ class EvaluationService(object):
         edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
                     entry_metrics_evaluators=entry_evaluators)
 
-        #test_dictionaries = ["elexis-oeaw-schranka"]
         dictionaries: [Dictionary] = edie.load_dictionaries()
         metadata_report = edie.evaluate_metadata(dictionaries)
         entry_report = edie.evaluate_entries(dictionaries)
         merged_report = edie.evaluation_report(entry_report, metadata_report)
         final_report = edie.aggregated_evaluation(merged_report)
-
         sys.stderr.write('Writing to file...')
         sys.stderr.flush()
         filename = self.save_path + str(evaluation_id) + '.json'

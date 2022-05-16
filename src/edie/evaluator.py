@@ -101,10 +101,10 @@ class Edie(object):
 
         self.report[AGGREGATION_METRICS] = {
             DICTIONARY_SIZE: {
-                'min': df[SIZE_OF_DICTIONARY].min(),
-                'max': df[SIZE_OF_DICTIONARY].max(),
-                'mean': df[SIZE_OF_DICTIONARY].mean(),
-                'median': df[SIZE_OF_DICTIONARY].median()
+                'min': float(df[SIZE_OF_DICTIONARY].min()),
+                'max': float(df[SIZE_OF_DICTIONARY].max()),
+                'mean': float(df[SIZE_OF_DICTIONARY].mean()),
+                'median': float(df[SIZE_OF_DICTIONARY].median())
             }
         }
 
@@ -133,7 +133,6 @@ class Edie(object):
     def _handle_entries(self, dictionary, entries, entry_report, max_entries, entries_offset):
         for entry in entries:
             entries_offset += 1
-            print(entries_offset)
             if entries_offset > max_entries:
                 break
             try:

@@ -1,5 +1,8 @@
 import argparse
 import sys
+from os.path import exists
+import pybars
+import json
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
@@ -9,6 +12,7 @@ from metrics.entry import FormsPerEntryMetric, NumberOfSensesEvaluator, Definiti
     SupportedFormatsEvaluator, AvgDefinitionLengthEvaluator
 from metrics.metadata import PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, \
     SizeOfDictionaryEvaluator
+
 
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator(),
                        SizeOfDictionaryEvaluator()]
@@ -30,6 +34,10 @@ def setup_argparser() -> argparse.ArgumentParser:
                            help="Maximum number of entries to evaluate")
     argparser.add_argument("--api-key",
                            help="The API KEY to use")
+    argparser.add_argument("--html",
+                            help="Write a human-readable HTML version of the output to this file")
+    argparser.add_argument("-v",
+                            help="Show verbose output")
 
     return argparser
 
@@ -40,7 +48,11 @@ if __name__ == "__main__":
     if args.max_entries:
         max_entries = int(args.max_entries)
     else:
-        max_entries = float('inf')
+        max_entries = None
+
+    if args.html and not exists("src/edie/edie.html"):
+        print("Cannot find template for HTML output, please run from home folder")
+        sys.exit(-1)
 
     if args.server:
         print("TODO: implement server mode")
@@ -57,17 +69,34 @@ if __name__ == "__main__":
         edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
                     entry_metrics_evaluators=entry_evaluators)
 
-        dictionaries: [Dictionary] = edie.load_dictionaries()
+        if args.d:
+            dictionaries: [Dictionary] = edie.load_dictionaries(dictionaries=args.d)
+        else:
+            dictionaries: [Dictionary] = edie.load_dictionaries()
         edie.evaluate_metadata()
-        edie.evaluate_entries()
+        if max_entries:
+            edie.evaluate_entries(max_entries=max_entries)
+        else:
+            edie.evaluate_entries()
         edie.aggregated_evaluation()
         report = edie.evaluation_report()
 
-        for dictionary in report['dictionaries']:
-            print("Evaluation Result of Dictionary " + dictionary, end='\n')
-            print("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']), end='\n')
-            print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
-            print('\n')
+        if args.v:
+            for dictionary in report['dictionaries']:
+                print("Evaluation Result of Dictionary " + dictionary, end='\n')
+                print("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']), end='\n')
+                print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
+                print('\n')
 
-        print("=== AGGREGATION METRICS ===")
-        print(report[AGGREGATION_METRICS])
+            print("=== AGGREGATION METRICS ===")
+            print(report[AGGREGATION_METRICS])
+        else:
+            print(json.dumps(report, indent=2))
+
+        if args.html:
+            compiler = pybars.Compiler()
+            template = compiler.compile(open("src/edie/edie.html").read())
+
+            with open(args.html, "w") as outp:
+                outp.write(template(report))
+

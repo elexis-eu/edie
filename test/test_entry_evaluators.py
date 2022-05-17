@@ -3,7 +3,7 @@ import unittest
 import pytest
 
 from edie.model import JsonEntry, Entry
-from edie.vocabulary import *
+from edie.vocabulary import Vocabulary
 from metrics.entry import AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator, SupportedFormatsEvaluator, \
     DefinitionOfSenseEvaluator
 
@@ -59,10 +59,10 @@ class TestAverageDefinitionLength(unittest.TestCase):
 
             result = evaluator.result()
 
-        self.assertGreater(result[DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER], 0.0)
-        self.assertGreater(result[DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN], 0.0)
-        self.assertGreater(result[DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER], 0.0)
-        self.assertGreater(result[DEFINITION_LENGTH_PER_SENSE_BY_TOKEN], 0.0)
+        self.assertGreater(result[Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER], 0.0)
+        self.assertGreater(result[Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN], 0.0)
+        self.assertGreater(result[Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER], 0.0)
+        self.assertGreater(result[Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_TOKEN], 0.0)
 
     def testReset(self):
         with open("test/data/entries_2_senses.json") as f:
@@ -137,13 +137,13 @@ class TestSupportedFormats(unittest.TestCase):
 
         result = evaluator.result()
 
-        self.assertEqual(result[FORMATS_PER_ENTRY], 3)
-        self.assertEqual(result[JSON_SUPPORTED_ENTRIES], 1)
-        self.assertEqual(result[TEI_SUPPORTED_ENTRIES], 1)
-        self.assertEqual(result[ONTOLEX_SUPPORTED_ENTRIES], 1)
-        self.assertEqual(result[JSON_COVERAGE], 1)
-        self.assertEqual(result[TEI_COVERAGE], 1)
-        self.assertEqual(result[ONTOLEX_COVERAGE], 1)
+        self.assertEqual(result[Vocabulary.FORMATS_PER_ENTRY], 3)
+        self.assertEqual(result[Vocabulary.JSON_SUPPORTED_ENTRIES], 1)
+        self.assertEqual(result[Vocabulary.TEI_SUPPORTED_ENTRIES], 1)
+        self.assertEqual(result[Vocabulary.ONTOLEX_SUPPORTED_ENTRIES], 1)
+        self.assertEqual(result[Vocabulary.JSON_COVERAGE], 1)
+        self.assertEqual(result[Vocabulary.TEI_COVERAGE], 1)
+        self.assertEqual(result[Vocabulary.ONTOLEX_COVERAGE], 1)
 
     def test_reset(self):
         evaluator = SupportedFormatsEvaluator()
@@ -195,8 +195,8 @@ class TestDefinitionOfSenses(unittest.TestCase):
 
         result = evaluator.result()
 
-        self.assertEqual(result[DEFINITIONS_PER_SENSE], 1.0)
-        self.assertEqual(result[DEFINITIONS_PER_ENTRY], 1.0)
+        self.assertEqual(result[Vocabulary.DEFINITIONS_PER_SENSE], 1.0)
+        self.assertEqual(result[Vocabulary.DEFINITIONS_PER_ENTRY], 1.0)
 
     def test_entry(self) -> None:
         with open("test/data/entries.json") as f:

@@ -3,7 +3,7 @@ import sys
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
-from edie.vocabulary import AGGREGATION_METRICS
+from edie.vocabulary import Vocabulary
 from edie.model import Dictionary
 from metrics.entry import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
     SupportedFormatsEvaluator, AvgDefinitionLengthEvaluator
@@ -69,5 +69,5 @@ if __name__ == "__main__":
             sys.stdout.write('\n')
 
         sys.stdout.write("Aggregation Metrics:")
-        sys.stdout.write(final_report[AGGREGATION_METRICS])
+        sys.stdout.write(final_report[Vocabulary.AGGREGATION_METRICS])
         sys.stderr.flush()

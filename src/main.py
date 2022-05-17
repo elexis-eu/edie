@@ -50,7 +50,6 @@ if __name__ == "__main__":
                 entry_metrics_evaluators=entry_evaluators)
 
     if args.server:
-        print("TODO: implement server mode")
         app = create_app()
         app.run()
     else:

@@ -34,6 +34,11 @@ You can run the system using the command:
 
     python src/main.py
 
+There is also a docker image available to start in server mode.
+    
+    docker pull acdhtech/elexis-edie
+    docker run -d -p 5000:5000  acdhtech/elexis-edie
+
 ## Author
 
 * John P. McCrae <john@mccr.ae>

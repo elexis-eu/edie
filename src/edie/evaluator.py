@@ -21,11 +21,20 @@ class Edie(object):
         self.entry_metrics_evaluators: [
             EntryMetric] = entry_metrics_evaluators if entry_metrics_evaluators is not None else []
         self.aggregate_evaluators: []
+        self.report = {"endpoint": api_client.endpoint, "available": True, 
+                "dictionaries": {},"errors":[]}
+        self.entries_limit = 100
 
-    def load_dictionaries(self, dictionaries_ids: [str] = None, limit=-1):
-        dictionaries: [Dictionary] = []
-        dictionary_ids = dictionaries_ids if dictionaries_ids is not None else self.lexonomy_client.dictionaries()[
-            "dictionaries"]
+    def load_dictionaries(self, dictionaries: [str] = None, limit=-1):
+        dicts = []
+        if dictionaries:
+            dictionary_ids = dictionaries
+        else:
+            try:
+                dictionary_ids = self.lexonomy_client.dictionaries()["dictionaries"]
+            except HTTPError as error:
+                self.report["available"] = False
+                self._add_errors(self.report, [str(error)])
         if limit == -1:
             limit = len(dictionary_ids)
         sys.stderr.write(f'Evaluating {len(dictionary_ids):d} dictionaries\n')
@@ -36,12 +45,14 @@ class Edie(object):
                     sys.stderr.write(f"Loading Metadata of {dictionary_id} \n")
                     metadata = Metadata(self.lexonomy_client.about(dictionary_id))
                     dictionary = Dictionary(dictionary_id, metadata)
-                    dictionaries.append(dictionary)
-                count += 1
-            except HTTPError:
+                    dicts.append(dictionary)
+                count+=1
+            except HTTPError as error:
+                self._add_errors(self.report, [str(error)])
+                self.report["available"] = False
                 sys.stderr.write(f'Failed loading {dictionary_id} dictionary \n')
 
-        return dictionaries
+        return dicts
 
     def evaluate_metadata(self, dictionaries: [Dictionary]) -> dict:
         report = {}
@@ -122,7 +133,12 @@ class Edie(object):
     def _loop_entries_endpoint(self, dictionary, entry_report, max_entries, entries_limit=100):
         entries_offset = 0
         while entries_offset <= max_entries:
-            entries = self.lexonomy_client.list(dictionary.id, limit=entries_limit, offset=entries_offset)
+            try:
+                entries = self.lexonomy_client.list(dictionary.id, limit=self.entries_limit, offset=entries_offset)
+            except HTTPError as error:
+                self._add_errors(entry_report, [str(error)])
+            except JSONDecodeError as error:
+                self._add_errors(entry_report, [str(error)])
             if not entries:
                 break
             entries_offset = self._handle_entries(dictionary, entries, entry_report, max_entries, entries_offset)
@@ -205,8 +221,14 @@ class Edie(object):
         for entry_metric in self.entry_metrics_evaluators:
             entry_metric.accumulate(entry_details, entry_metadata)
 
-    @staticmethod
-    def _add_errors(entry_report, errors):
+    def _prepare_report(self, dictionary):
+        if dictionary.id not in self.report['dictionaries']:
+            self.report['dictionaries'][dictionary.id] = {'entry_report': {}, 'metadata_report': {}}
+
+    def _add_entry_report(self, dictionary, entry_report):
+        self.report['dictionaries'][dictionary.id]['entry_report'] = entry_report
+
+    def _add_errors(self, entry_report, errors):
         if "errors" not in entry_report:
             entry_report["errors"] = []
         entry_report["errors"].extend(errors)

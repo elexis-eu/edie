@@ -1,0 +1,15 @@
+.gitlab-ci.yml
+.pylintrc
+.travis.yml
+README.md
+setup.cfg
+setup.py
+test-requirements.txt
+tox.ini
+/test/
+/.github/
+/.idea/
+/.pytest_cache/
+/dist/
+/edie.egg-info/
+/openapi_client.egg-info/

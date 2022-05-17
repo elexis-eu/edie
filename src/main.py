@@ -6,12 +6,13 @@ import json
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
-from edie.vocabulary import AGGREGATION_METRICS
+from edie.vocabulary import Vocabulary
 from edie.model import Dictionary
 from metrics.entry import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
     SupportedFormatsEvaluator, AvgDefinitionLengthEvaluator
 from metrics.metadata import PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, \
     SizeOfDictionaryEvaluator
+from rest import create_app
 
 
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator(),
@@ -54,32 +55,25 @@ if __name__ == "__main__":
         print("Cannot find template for HTML output, please run from home folder")
         sys.exit(-1)
 
+    endpoint = args.e if args.e else "http://localhost:8000/"
+    api_instance = ApiClient(endpoint, args.api_key)
+    edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
+                entry_metrics_evaluators=entry_evaluators)
     if args.server:
-        print("TODO: implement server mode")
-        sys.exit(-1)
+        app = create_app()
+        app.run()
     else:
-        test_dictionaries = [
-            "elexis-oeaw-jakob",
-            "elexis-oeaw-schranka",
-            "elexis-tcdh-bmz"
-        ]
-        endpoint = args.e if args.e else "http://localhost:8000/"
-        report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
-        api_instance = ApiClient(endpoint, args.api_key)
-        edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
-                    entry_metrics_evaluators=entry_evaluators)
-
         if args.d:
             dictionaries: [Dictionary] = edie.load_dictionaries(dictionaries=args.d)
         else:
             dictionaries: [Dictionary] = edie.load_dictionaries()
-        edie.evaluate_metadata()
+        metadata_report = edie.evaluate_metadata(dictionaries)
         if max_entries:
-            edie.evaluate_entries(max_entries=max_entries)
+            entry_report = edie.evaluate_entries(dictionaries, max_entries=max_entries)
         else:
-            edie.evaluate_entries()
-        edie.aggregated_evaluation()
-        report = edie.evaluation_report()
+            entry_report = edie.evaluate_entries(dictionaries)
+        merged_report = edie.evaluation_report(entry_report, metadata_report)
+        report = edie.aggregated_evaluation(merged_report)
 
         if args.v:
             for dictionary in report['dictionaries']:
@@ -99,4 +93,3 @@ if __name__ == "__main__":
 
             with open(args.html, "w") as outp:
                 outp.write(template(report))
-

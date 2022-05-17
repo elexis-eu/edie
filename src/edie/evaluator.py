@@ -5,11 +5,10 @@ from xml.etree.ElementTree import ParseError
 from pandas.plotting import parallel_coordinates
 from requests import HTTPError
 from requests.exceptions import JSONDecodeError
-
+from edie.vocabulary import Vocabulary
 from edie.api import ApiClient
 from edie.helper import validate_tei
 from edie.model import Metadata, Dictionary, Entry, JsonEntry
-from edie.vocabulary import SIZE_OF_DICTIONARY, AGGREGATION_METRICS, DICTIONARY_SIZE
 from metrics.base import MetadataMetric, EntryMetric
 
 
@@ -17,18 +16,22 @@ class Edie(object):
     def __init__(self, api_client, metadata_metrics_evaluators: [MetadataMetric] = None,
                  entry_metrics_evaluators: [EntryMetric] = None):
         self.lexonomy_client: ApiClient = api_client
-        self.dictionaries: [Dictionary] = []
         self.metadata_metrics_evaluators: [
             MetadataMetric] = metadata_metrics_evaluators if metadata_metrics_evaluators is not None else []
         self.entry_metrics_evaluators: [
             EntryMetric] = entry_metrics_evaluators if entry_metrics_evaluators is not None else []
         self.aggregate_evaluators: []
 
-        self.report = {"endpoint": api_client.endpoint, "available": True, "dictionaries": {}}
-        self.entries_limit = 100
-
     def load_dictionaries(self, dictionaries: [str] = None, limit=-1):
-        dictionary_ids = dictionaries if dictionaries is not None else self.lexonomy_client.dictionaries()["dictionaries"]
+        dicts = []
+        if dictionaries:
+            dictionary_ids = dictionaries
+        else:
+            try:
+                dictionary_ids = self.lexonomy_client.dictionaries()["dictionaries"]
+            except HTTPError as error:
+                self.report["available"] = False
+                self._add_errors(self.report, [str(error)])
         if limit == -1:
             limit = len(dictionary_ids)
         sys.stderr.write(f'Evaluating {len(dictionary_ids):d} dictionaries\n')
@@ -39,18 +42,21 @@ class Edie(object):
                     sys.stderr.write(f"Loading Metadata of {dictionary_id} \n")
                     metadata = Metadata(self.lexonomy_client.about(dictionary_id))
                     dictionary = Dictionary(dictionary_id, metadata)
-                    self.dictionaries.append(dictionary)
+                    dicts.append(dictionary)
                 count+=1
-            except HTTPError:
+            except HTTPError as error:
+                self._add_errors(self.report, [str(error)])
+                self.report["available"] = False
                 sys.stderr.write(f'Failed loading {dictionary_id} dictionary \n')
 
-        return self.dictionaries
+        return dicts
 
-    def evaluate_metadata(self) -> None:
-        for dictionary in self.dictionaries:
-            self._prepare_report(dictionary)
+    def evaluate_metadata(self, dictionaries: [Dictionary]) -> dict:
+        report = {}
+        for dictionary in dictionaries:
 
             sys.stderr.write(f'Evaluating {dictionary}')
+            sys.stderr.flush()
 
             metadata_report = {}
             metadata = dictionary.metadata
@@ -58,14 +64,20 @@ class Edie(object):
                 metadata_report['errors'] = dictionary.metadata.errors
 
             for metadata_evaluator in self.metadata_metrics_evaluators:
+                sys.stderr.write(str(metadata_evaluator))
+                sys.stderr.flush()
                 metadata_evaluator.analyze(metadata)
                 metadata_report.update(metadata_evaluator.result())
 
-            self.report['dictionaries'][dictionary.id]['metadata_report'] = metadata_report
+            report[dictionary.id] = {'metadata_report': metadata_report}
+            sys.stderr.write(str(metadata_report))
+            sys.stderr.flush()
 
-    def evaluate_entries(self, max_entries=None) -> None:
-        for dictionary in self.dictionaries:
-            self._prepare_report(dictionary)
+        return report
+
+    def evaluate_entries(self, dictionaries: [Dictionary], max_entries=100) -> dict:
+        report = {}
+        for dictionary in dictionaries:
             entry_report = {}
 
             entry_counter = max_entries if max_entries is not None else dictionary.metadata.entry_count
@@ -73,55 +85,69 @@ class Edie(object):
 
             sys.stderr.write("\n")
 
-            self._collect_entry_metrics(entry_report)
-            self._add_entry_report(dictionary, entry_report)
+            self._collect_entry_metrics(entry_report, self.entry_metrics_evaluators)
+            report[dictionary.id] = {'entry_report': entry_report}
 
-    def entry_evaluation_report_as_dataframe(self):
-        return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['entry_report']
-                                       for i in self.report['dictionaries'].keys()},
+        return report
+
+    @staticmethod
+    def entry_evaluation_report_as_dataframe(report: dict):
+        return pd.DataFrame.from_dict({i: report['dictionaries'][i]['entry_report']
+                                       for i in report['dictionaries'].keys()},
                                       orient='index')
 
-    def metadata_evaluation_report_as_dataframe(self):
-        return pd.DataFrame.from_dict({i: self.report['dictionaries'][i]['metadata_report']
-                                       for i in self.report['dictionaries'].keys()},
-                                      orient='index')
+    @staticmethod
+    def metadata_evaluation_report_as_dataframe(report: dict):
+        return pd.DataFrame.from_dict({i: report['dictionaries'][i]['metadata_report']
+                                       for i in report['dictionaries'].keys()},
+                                      orient='index', dtype=object)
 
-    def entry_report(self, dictionary_id):
-        return self.report['dictionaries'][dictionary_id]['entry_report']
+    @staticmethod
+    def entry_report(dictionary_id, report: dict):
+        return report[dictionary_id]['entry_report']
 
-    def visualize(self):
-        dataframe = self.entry_evaluation_report_as_dataframe().drop('errors', axis=1)
+    def visualize(self, final_report):
+        dataframe = self.entry_evaluation_report_as_dataframe(final_report).drop('errors', axis=1)
         dataframe = dataframe.apply(lambda x: x / x.max(), axis=0)
         dataframe['dict_type'] = 0
         parallel_coordinates(dataframe, "dict_type", axvlines=True)
         plt.show()
 
-    def aggregated_evaluation(self):
-        df = self.metadata_evaluation_report_as_dataframe()
+    def aggregated_evaluation(self, report: dict):
+        print("report=" + str(report))
+        df = self.metadata_evaluation_report_as_dataframe(report)
 
-        self.report[AGGREGATION_METRICS] = {
-            DICTIONARY_SIZE: {
-                'min': float(df[SIZE_OF_DICTIONARY].min()),
-                'max': float(df[SIZE_OF_DICTIONARY].max()),
-                'mean': float(df[SIZE_OF_DICTIONARY].mean()),
-                'median': float(df[SIZE_OF_DICTIONARY].median())
+        report[Vocabulary.AGGREGATION_METRICS] = {
+            Vocabulary.DICTIONARY_SIZE: {
+                'min': float(df[Vocabulary.SIZE_OF_DICTIONARY].min()),
+                'max': float(df[Vocabulary.SIZE_OF_DICTIONARY].max()),
+                'mean': float(df[Vocabulary.SIZE_OF_DICTIONARY].mean()),
+                'median': float(df[Vocabulary.SIZE_OF_DICTIONARY].median())
             }
         }
 
-    def _loop_entries_endpoint(self, dictionary, entry_report, max_entries):
+        return report
+
+    def _loop_entries_endpoint(self, dictionary, entry_report, max_entries, entries_limit=100):
         entries_offset = 0
         while entries_offset <= max_entries:
-            entries = self.lexonomy_client.list(dictionary.id, limit=self.entries_limit, offset=entries_offset)
+            try:
+                entries = self.lexonomy_client.list(dictionary.id, limit=entries_limit, offset=entries_offset)
+            except HTTPError as error:
+                self._add_errors(entry_report, [str(error)])
+            except JSONDecodeError as error:
+                self._add_errors(entry_report, [str(error)])
             if not entries:
                 break
             entries_offset = self._handle_entries(dictionary, entries, entry_report, max_entries, entries_offset)
             sys.stderr.write(str(entries_offset) + '...')
             sys.stderr.flush()
-            if len(entries) < self.entries_limit:
+            if len(entries) < entries_limit:
                 break
 
-    def _collect_entry_metrics(self, entry_report):
-        for entry_metric in self.entry_metrics_evaluators:
+    @staticmethod
+    def _collect_entry_metrics(entry_report, entry_metrics_evaluators: [EntryMetric]):
+        for entry_metric in entry_metrics_evaluators:
             if entry_metric.result():
                 sys.stderr.write(str(entry_metric))
                 sys.stderr.write(str(entry_metric.result()))
@@ -151,8 +177,18 @@ class Edie(object):
 
         return entries_offset
 
-    def evaluation_report(self):
-        return self.report
+    def evaluation_report(self, entry_report: dict, metadata_report: dict):
+        report = {"endpoint": self.lexonomy_client.endpoint, "available": True, "dictionaries": {}}
+        for key in entry_report.keys():
+            if key not in report['dictionaries']:
+                report['dictionaries'][key] = {'entry_report': {}, 'metadata_report': {}}
+            report['dictionaries'][key]['entry_report'] = entry_report[key]['entry_report']
+        for key in metadata_report.keys():
+            if key not in report['dictionaries']:
+                report['dictionaries'][key] = {'entry_report': {}, 'metadata_report': {}}
+            report['dictionaries'][key]['metadata_report'] = metadata_report[key]['metadata_report']
+
+        return report
 
     def _entry_report(self, dictionary_id: str, entry_report: dict, entry: Entry):
         retrieved_entry: JsonEntry = self._retrieve_entry(dictionary_id, entry)
@@ -160,7 +196,7 @@ class Edie(object):
             if retrieved_entry.errors:
                 self._add_errors(entry_report, retrieved_entry.errors)
             self._run_entry_metrics_evaluators(retrieved_entry, entry)
-        else: #TODO: handle None case
+        else:  # TODO: handle None case
             pass
 
     def _retrieve_entry(self, dictionary_id, entry: Entry) -> JsonEntry:
@@ -189,8 +225,7 @@ class Edie(object):
     def _add_entry_report(self, dictionary, entry_report):
         self.report['dictionaries'][dictionary.id]['entry_report'] = entry_report
 
-    @staticmethod
-    def _add_errors(entry_report, errors):
+    def _add_errors(self, entry_report, errors):
         if "errors" not in entry_report:
             entry_report["errors"] = []
         entry_report["errors"].extend(errors)

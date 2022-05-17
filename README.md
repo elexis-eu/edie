@@ -34,6 +34,35 @@ You can run the system using the command:
 
     python src/main.py
 
+## Usage
+
+```
+usage: ELEXIS Dictionary Evaluation Tool (EDiE) [-h] [--server] [-d D [D ...]] [-e E] [-m M [M ...]] [--max-entries MAX_ENTRIES] [--api-key API_KEY]
+
+options:
+  -h, --help            show this help message and exit
+  --server              Start in server mode
+  -d D [D ...]          Dictionaries to evaluate
+  -e E                  Endpoint to query
+  -m M [M ...]          List of metrics to evaluate
+  --max-entries MAX_ENTRIES
+                        Maximum number of entries to evaluate
+  --api-key API_KEY     The API KEY to use
+```
+
+You can test an endpoint with the following command, this is limited to a single
+endpoint:
+
+```
+python src/main.py -e http://lexonomy.elex.is --api-key ASK_SOMEONE_IN_THE_PROJECT \
+   --max-entries=10 -d elexis-dsl-ddo --html tmp.html
+```
+
+There is also a docker image available to start in server mode.
+
+    docker pull acdhtech/elexis-edie
+    docker run -d -p 5000:5000  acdhtech/elexis-edie
+
 ## Author
 
 * John P. McCrae <john@mccr.ae>

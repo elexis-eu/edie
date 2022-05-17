@@ -24,7 +24,8 @@ REQUIRES = [
   "python-dateutil",
   "requests >= 2.26.0",
   "pandas >= 1.1.5",
-  "matplotlib>=3.5.1"
+  "matplotlib>=3.5.1",
+  "rdflib>=6.1.1"
 ]
 
 setup(

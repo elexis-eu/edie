@@ -21,9 +21,6 @@ class Edie(object):
         self.entry_metrics_evaluators: [
             EntryMetric] = entry_metrics_evaluators if entry_metrics_evaluators is not None else []
         self.aggregate_evaluators: []
-        self.report = {"endpoint": api_client.endpoint, "available": True, 
-                "dictionaries": {},"errors":[]}
-        self.entries_limit = 100
 
     def load_dictionaries(self, dictionaries: [str] = None, limit=-1):
         dicts = []
@@ -117,14 +114,15 @@ class Edie(object):
         plt.show()
 
     def aggregated_evaluation(self, report: dict):
+        print("report=" + str(report))
         df = self.metadata_evaluation_report_as_dataframe(report)
 
         report[Vocabulary.AGGREGATION_METRICS] = {
             Vocabulary.DICTIONARY_SIZE: {
-                'min': df[Vocabulary.SIZE_OF_DICTIONARY].min(),
-                'max': df[Vocabulary.SIZE_OF_DICTIONARY].max(),
-                'mean': df[Vocabulary.SIZE_OF_DICTIONARY].mean(),
-                'median': df[Vocabulary.SIZE_OF_DICTIONARY].median()
+                'min': float(df[Vocabulary.SIZE_OF_DICTIONARY].min()),
+                'max': float(df[Vocabulary.SIZE_OF_DICTIONARY].max()),
+                'mean': float(df[Vocabulary.SIZE_OF_DICTIONARY].mean()),
+                'median': float(df[Vocabulary.SIZE_OF_DICTIONARY].median())
             }
         }
 
@@ -134,7 +132,7 @@ class Edie(object):
         entries_offset = 0
         while entries_offset <= max_entries:
             try:
-                entries = self.lexonomy_client.list(dictionary.id, limit=self.entries_limit, offset=entries_offset)
+                entries = self.lexonomy_client.list(dictionary.id, limit=entries_limit, offset=entries_offset)
             except HTTPError as error:
                 self._add_errors(entry_report, [str(error)])
             except JSONDecodeError as error:
@@ -161,7 +159,6 @@ class Edie(object):
     def _handle_entries(self, dictionary, entries, entry_report, max_entries, entries_offset):
         for entry in entries:
             entries_offset += 1
-
             if entries_offset > max_entries:
                 break
             try:

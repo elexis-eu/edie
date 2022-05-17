@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title>ELEXIS Dictionary Evaluation report</title>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <h1>Evaluation Report</h1>
+
+                <p><b>Endpoint address:</b> <a href="{{endpoint}}">{{endpoint}}</a>
+
+                {{#if available}}
+                <p><i class="fa-solid fa-circle-check" style="color:green;"></i> Endpoint is available and functioning normally</p>
+                {{else}}
+                <p><i class="fa-solid fa-circle-xmark" style="color:crimson;"></i> Endpoint is not available!</p>
+                {{/if}}
+            </div>
+
+            {{#each dictionaries}}
+            <div class="row">
+                <h2>Report for {{@key}}</h2>
+
+                <h3>Metadata Report</h3>
+
+                <h4>Errors</h4>
+
+                {{#if this.metadata_report.errors}}
+                <ul>
+                    {{#each this.metadata_report.errors}}
+                    <li><i class="fa-solid fa-circle-xmark" style="color:crimson;"></i> {{this}} </li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p><i class="fa-solid fa-circle-check" style="color:green;"></i> No Errors!</p>
+                {{/if}}
+
+                <table class="table">
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th></th>
+                    {{#if this.metadata_report.sizeOfDictionary}}
+                    <tr>
+                        <td>Size of Dictionary</td>
+                        <td>{{this.metadata_report.sizeOfDictionary}} entries</td>
+                    </tr>
+                </table>
+                    {{/if}}
+                                                    
+                <h3>Entry Report</h3>
+                    
+                <h4>Errors</h4>
+
+                {{#if this.entry_report.errors}}
+                <ul>
+                {{#each this.entry_report.errors}}
+                <li><i class="fa-solid fa-circle-xmark" style="color:crimson;"></i> {{this}} </li>
+                {{/each}}
+                </ul>
+                {{else}}
+                <p><i class="fa-solid fa-circle-check" style="color:green;"></i> No Errors!</p>
+                {{/if}}
+
+            </div>
+            {{/each}}
+        </div>
+    </body>
+</html>

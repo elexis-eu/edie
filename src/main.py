@@ -1,5 +1,8 @@
 import argparse
 import sys
+from os.path import exists
+import pybars
+import json
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
@@ -10,6 +13,7 @@ from metrics.entry import FormsPerEntryMetric, NumberOfSensesEvaluator, Definiti
 from metrics.metadata import PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, \
     SizeOfDictionaryEvaluator
 from rest import create_app
+
 
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator(),
                        SizeOfDictionaryEvaluator()]
@@ -31,6 +35,10 @@ def setup_argparser() -> argparse.ArgumentParser:
                            help="Maximum number of entries to evaluate")
     argparser.add_argument("--api-key",
                            help="The API KEY to use")
+    argparser.add_argument("--html",
+                            help="Write a human-readable HTML version of the output to this file")
+    argparser.add_argument("-v",
+                            help="Show verbose output")
 
     return argparser
 
@@ -41,33 +49,47 @@ if __name__ == "__main__":
     if args.max_entries:
         max_entries = int(args.max_entries)
     else:
-        max_entries = float('inf')
+        max_entries = None
+
+    if args.html and not exists("src/edie/edie.html"):
+        print("Cannot find template for HTML output, please run from home folder")
+        sys.exit(-1)
 
     endpoint = args.e if args.e else "http://localhost:8000/"
-    report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
     api_instance = ApiClient(endpoint, args.api_key)
     edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
                 entry_metrics_evaluators=entry_evaluators)
-
     if args.server:
         app = create_app()
         app.run()
     else:
-        #test_dictionaries = ["elexis-oeaw-schranka"]
-        dictionaries: [Dictionary] = edie.load_dictionaries()
+        if args.d:
+            dictionaries: [Dictionary] = edie.load_dictionaries(dictionaries=args.d)
+        else:
+            dictionaries: [Dictionary] = edie.load_dictionaries()
         metadata_report = edie.evaluate_metadata(dictionaries)
-        entry_report = edie.evaluate_entries(dictionaries)
+        if max_entries:
+            entry_report = edie.evaluate_entries(dictionaries, max_entries=max_entries)
+        else:
+            entry_report = edie.evaluate_entries(dictionaries)
         merged_report = edie.evaluation_report(entry_report, metadata_report)
-        final_report = edie.aggregated_evaluation(merged_report)
+        report = edie.aggregated_evaluation(merged_report)
 
-        for dictionary in report['dictionaries']:
-            sys.stdout.write("Evaluation Result of Dictionary " + dictionary)
-            sys.stdout.write("\n")
-            sys.stdout.write("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']))
-            sys.stdout.write("\n")
-            sys.stdout.write("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']))
-            sys.stdout.write('\n')
+        if args.v:
+            for dictionary in report['dictionaries']:
+                print("Evaluation Result of Dictionary " + dictionary, end='\n')
+                print("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']), end='\n')
+                print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
+                print('\n')
 
-        sys.stdout.write("Aggregation Metrics:")
-        sys.stdout.write(final_report[Vocabulary.AGGREGATION_METRICS])
-        sys.stderr.flush()
+            print("=== AGGREGATION METRICS ===")
+            print(report[AGGREGATION_METRICS])
+        else:
+            print(json.dumps(report, indent=2))
+
+        if args.html:
+            compiler = pybars.Compiler()
+            template = compiler.compile(open("src/edie/edie.html").read())
+
+            with open(args.html, "w") as outp:
+                outp.write(template(report))

@@ -1,4 +1,4 @@
-from edie.vocabulary import *
+from edie.vocabulary import Vocabulary
 from metrics.base import MetadataMetric
 
 
@@ -18,7 +18,7 @@ class PublisherEvaluator(MetadataMetric):
 
     def result(self):
         if self.publisher_info_present:
-            return {PUBLISHER: self.publisher}
+            return {Vocabulary.PUBLISHER: self.publisher}
         else:
             return {}
 
@@ -38,7 +38,7 @@ class LicenseEvaluator(MetadataMetric):
 
     def result(self):
         if self.license_info_present:
-            return {LICENSE: self.license}
+            return {Vocabulary.LICENSE: self.license}
         else:
             return {}
 
@@ -60,9 +60,9 @@ class MetadataQuantityEvaluator(MetadataMetric):
     def result(self):
         result = {}
         if self.metric_count > 0:
-            result[METADATA_NONEMPTY_FIELDS] = self.metric_count
+            result[Vocabulary.METADATA_NONEMPTY_FIELDS] = self.metric_count
         if self.total_metrics > 0:
-            result[METADATA_FIELDS] = self.total_metrics
+            result[Vocabulary.METADATA_FIELDS] = self.total_metrics
         return result
 
 
@@ -81,7 +81,7 @@ class RecencyEvaluator(MetadataMetric):
 
     def result(self):
         if self.recency:
-            return {RECENCY: self.recency}
+            return {Vocabulary.RECENCY: self.recency}
         else:
             return {}
 
@@ -100,6 +100,6 @@ class SizeOfDictionaryEvaluator(MetadataMetric):
     def result(self):
         result = {}
         if self.entry_count > 0:
-            result.update({SIZE_OF_DICTIONARY: self.entry_count})
+            result.update({Vocabulary.SIZE_OF_DICTIONARY: self.entry_count})
 
         return result

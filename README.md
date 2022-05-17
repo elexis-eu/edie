@@ -58,6 +58,11 @@ python src/main.py -e http://lexonomy.elex.is --api-key ASK_SOMEONE_IN_THE_PROJE
    --max-entries=10 -d elexis-dsl-ddo --html tmp.html
 ```
 
+There is also a docker image available to start in server mode.
+
+    docker pull acdhtech/elexis-edie
+    docker run -d -p 5000:5000  acdhtech/elexis-edie
+
 ## Author
 
 * John P. McCrae <john@mccr.ae>

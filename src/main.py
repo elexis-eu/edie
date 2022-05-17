@@ -3,12 +3,13 @@ import sys
 
 from edie.api import ApiClient
 from edie.evaluator import Edie
-from edie.vocabulary import AGGREGATION_METRICS
+from edie.vocabulary import Vocabulary
 from edie.model import Dictionary
 from metrics.entry import FormsPerEntryMetric, NumberOfSensesEvaluator, DefinitionOfSenseEvaluator, \
     SupportedFormatsEvaluator, AvgDefinitionLengthEvaluator
 from metrics.metadata import PublisherEvaluator, LicenseEvaluator, MetadataQuantityEvaluator, RecencyEvaluator, \
     SizeOfDictionaryEvaluator
+from rest import create_app
 
 metadata_evaluators = [PublisherEvaluator(), LicenseEvaluator(), MetadataQuantityEvaluator(), RecencyEvaluator(),
                        SizeOfDictionaryEvaluator()]
@@ -42,32 +43,31 @@ if __name__ == "__main__":
     else:
         max_entries = float('inf')
 
-    if args.server:
-        print("TODO: implement server mode")
-        sys.exit(-1)
-    else:
-        test_dictionaries = [
-            "elexis-oeaw-jakob",
-            "elexis-oeaw-schranka",
-            "elexis-tcdh-bmz"
-        ]
-        endpoint = args.e if args.e else "http://localhost:8000/"
-        report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
-        api_instance = ApiClient(endpoint, args.api_key)
-        edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
-                    entry_metrics_evaluators=entry_evaluators)
+    endpoint = args.e if args.e else "http://localhost:8000/"
+    report = {"endpoint": endpoint, "available": True, "dictionaries": {}}
+    api_instance = ApiClient(endpoint, args.api_key)
+    edie = Edie(api_instance, metadata_metrics_evaluators=metadata_evaluators,
+                entry_metrics_evaluators=entry_evaluators)
 
+    if args.server:
+        app = create_app()
+        app.run()
+    else:
+        #test_dictionaries = ["elexis-oeaw-schranka"]
         dictionaries: [Dictionary] = edie.load_dictionaries()
-        edie.evaluate_metadata()
-        edie.evaluate_entries()
-        edie.aggregated_evaluation()
-        report = edie.evaluation_report()
+        metadata_report = edie.evaluate_metadata(dictionaries)
+        entry_report = edie.evaluate_entries(dictionaries)
+        merged_report = edie.evaluation_report(entry_report, metadata_report)
+        final_report = edie.aggregated_evaluation(merged_report)
 
         for dictionary in report['dictionaries']:
-            print("Evaluation Result of Dictionary " + dictionary, end='\n')
-            print("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']), end='\n')
-            print("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']), end='\n')
-            print('\n')
+            sys.stdout.write("Evaluation Result of Dictionary " + dictionary)
+            sys.stdout.write("\n")
+            sys.stdout.write("Metadata Evaluation: " + str(report['dictionaries'][dictionary]['metadata_report']))
+            sys.stdout.write("\n")
+            sys.stdout.write("Entry Evaluation: " + str(report['dictionaries'][dictionary]['entry_report']))
+            sys.stdout.write('\n')
 
-        print("=== AGGREGATION METRICS ===")
-        print(report[AGGREGATION_METRICS])
+        sys.stdout.write("Aggregation Metrics:")
+        sys.stdout.write(final_report[Vocabulary.AGGREGATION_METRICS])
+        sys.stderr.flush()

@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from edie.evaluator import Edie
 from edie.model import Dictionary, Metadata
-from edie.vocabulary import AGGREGATION_METRICS, DICTIONARY_SIZE
+from edie.vocabulary import Vocabulary
 from metrics.entry import AvgDefinitionLengthEvaluator
 
 
@@ -90,18 +90,18 @@ class TestEdie(TestCase):
         with open('test/data/about_with_error.json') as about_file:
             metadata_json = json.load(about_file)
 
-            avg_def_evaluator.result.return_value = {'DefinitionLengthPerEntryByCharacter': 71.0,
-                                                     'DefinitionLengthPerEntryByToken': 13.0,
-                                                     'DefinitionLengthPerSenseByCharacter': 35.5,
-                                                     'DefinitionLengthPerSenseByToken': 6.5}
+            avg_def_evaluator.result.return_value = {Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER: 71.0,
+                                                     Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN: 13.0,
+                                                     Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER: 35.5,
+                                                     Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_TOKEN: 6.5}
             edie = Edie(self.api_client, entry_metrics_evaluators=[avg_def_evaluator])
 
             report = edie.evaluate_entries([Dictionary('DICT_ID_1', metadata=Metadata(metadata_json))])
 
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerEntryByCharacter'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerEntryByToken'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerSenseByCharacter'])
-            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)['DefinitionLengthPerSenseByToken'])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)[Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)[Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)[Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER])
+            self.assertIsNotNone(edie.entry_report(self.dict_id_1, report)[Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_TOKEN])
 
     @patch('metrics.entry.AvgDefinitionLengthEvaluator')
     def test_entry_evaluation_with_errors(self, avg_def_evaluator):
@@ -125,14 +125,14 @@ class TestEdie(TestCase):
                                    Dictionary('DICT_ID_2', metadata=Metadata(metadata_json))]
                                   )
 
-            self.assertEqual(report[self.dict_id_1]['entry_report']['DefinitionLengthPerEntryByCharacter'], 4)
-            self.assertIsNotNone(report[self.dict_id_1]['entry_report']['DefinitionLengthPerEntryByToken'], 1)
-            self.assertIsNotNone(report[self.dict_id_1]['entry_report']['DefinitionLengthPerSenseByCharacter'], 4)
-            self.assertIsNotNone(report[self.dict_id_1]['entry_report']['DefinitionLengthPerSenseByToken'], 1)
-            self.assertEqual(report[self.dict_id_2]['entry_report']['DefinitionLengthPerEntryByCharacter'], 14)
-            self.assertIsNotNone(report[self.dict_id_2]['entry_report']['DefinitionLengthPerEntryByToken'], 3)
-            self.assertIsNotNone(report[self.dict_id_2]['entry_report']['DefinitionLengthPerSenseByCharacter'], 7)
-            self.assertIsNotNone(report[self.dict_id_2]['entry_report']['DefinitionLengthPerSenseByToken'], 1.5)
+            self.assertEqual(report[self.dict_id_1]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER], 4)
+            self.assertIsNotNone(report[self.dict_id_1]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN], 1)
+            self.assertIsNotNone(report[self.dict_id_1]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER], 4)
+            self.assertIsNotNone(report[self.dict_id_1]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_TOKEN], 1)
+            self.assertEqual(report[self.dict_id_2]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER], 14)
+            self.assertIsNotNone(report[self.dict_id_2]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN], 3)
+            self.assertIsNotNone(report[self.dict_id_2]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER], 7)
+            self.assertIsNotNone(report[self.dict_id_2]['entry_report'][Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_TOKEN], 1.5)
 
     def test_entry_report_to_dataframe(self):
         with open("test/data/end_report.json") as report_file:
@@ -168,8 +168,8 @@ class TestEdie(TestCase):
 
             edie.aggregated_evaluation(end_report)
 
-            self.assertIsNotNone(edie.report[AGGREGATION_METRICS])
-            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['min'], 0)
-            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['max'], 0)
-            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['mean'], 0)
-            self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['median'], 0)
+            self.assertIsNotNone(edie.report[Vocabulary.AGGREGATION_METRICS])
+            self.assertGreater(edie.report[Vocabulary.AGGREGATION_METRICS][Vocabulary.DICTIONARY_SIZE]['min'], 0)
+            self.assertGreater(edie.report[Vocabulary.AGGREGATION_METRICS][Vocabulary.DICTIONARY_SIZE]['max'], 0)
+            self.assertGreater(edie.report[Vocabulary.AGGREGATION_METRICS][Vocabulary.DICTIONARY_SIZE]['mean'], 0)
+            self.assertGreater(edie.report[Vocabulary.AGGREGATION_METRICS][Vocabulary.DICTIONARY_SIZE]['median'], 0)

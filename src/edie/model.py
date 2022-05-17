@@ -160,6 +160,16 @@ class Metadata(object):
         else:
             self.errors.append("Publisher not specified")
             self.title = None
+
+        if "entryCount" in json:
+            if isinstance(json["entryCount"], int):
+                self.entry_count = int(json["entryCount"])
+            else:
+                self.errors.append("Entry count was invalid: "
+                        + str(json["entryCount"]))
+        else:
+            self.entry_count = None
+
         self.abstract = self._extract_string_prop(json, 'abstract')
         self.accrual_method = self._extract_string_prop(json, 'accrualMethod')
         self.accrual_periodicity = self._extract_string_prop(json, 'accrualPeriodicity')
@@ -457,6 +467,31 @@ class JsonEntry(object):
         else:
             self.usage = None
 
+        if "label" in json:
+            if isinstance(json["label"], str):
+                self.label = json["label"]
+            else:
+                self.errors.append("Bad label: " +
+                        str(json["label"]))
+        else:
+            self.label = None
+
+        if "crossReference" in json:
+            self.cross_reference = json["crossReference"]
+        else:
+            self.cross_reference = None
+
+        if "note" in json:
+            if isinstance(json["note"], str):
+                self.note = json["note"]
+            else:
+                self.errors.append("Bad note: " +
+                                   str(json["note"]))
+                self.note = None
+        else:
+            self.note = None
+
+
     @classmethod
     def from_tei_entry(cls, tei_entry: Element, entry_id: str):
         """Convert a TEI entry into Json
@@ -568,6 +603,28 @@ class JsonForm(object):
         else:
             self.phonetic_rep = None
 
+        if "note" in json:
+            if isinstance(json["note"], str):
+                self.note = json["note"]
+            else:
+                self.errors.append("Bad note: " +
+                                   str(json["note"]))
+                self.note = None
+        else:
+            self.note = None
+
+
+        if "type" in json:
+            if (isinstance(json["type"], str) and 
+                    json["type"] in ["secondaryHeadword", "variant", "inflectedForm", "other"]):
+                self.type = json["type"]
+            else:
+                self.errors.append("Bad type: " +
+                                   str(json["type"]))
+                self.type = None
+        else:
+            self.type = None
+
 
 class JsonSense(object):
     def __init__(self, json):
@@ -590,7 +647,73 @@ class JsonSense(object):
                                    str(json["reference"]))
                 self.reference = None
         else:
-            self.phonetic_rep = None
+            self.reference = None
+
+        if "example" in json:
+            if (isinstance(json["example"], list) and
+                    all(isinstance(j, str) for j in json["example"])):
+                self.example = json["example"]
+            else:
+                self.errors.append("Bad example: " +
+                                   str(json["example"]))
+                self.example = None
+        else:
+            self.example = None
+
+        if "indicator" in json:
+            if isinstance(json["indicator"], str):
+                self.indicator = json["indicator"]
+            else:
+                self.errors.append("Bad indicator: " +
+                                   str(json["indicator"]))
+                self.indicator = None
+        else:
+            self.indicator = None
+
+        if "note" in json:
+            if isinstance(json["note"], str):
+                self.note = json["note"]
+            else:
+                self.errors.append("Bad note: " +
+                                   str(json["note"]))
+                self.note = None
+        else:
+            self.note = None
+
+        if "translation" in json:
+            if (isinstance(json["translation"], list) and
+                    all(isinstance(j, dict) for j in json["translation"])):
+                self.translation = [JsonTranslation(j) for j in json["translation"]]
+            else:
+                self.errors.append("Bad translation: " +
+                                   str(json["translation"]))
+                self.translation = []
+        else:
+            self.translation = []
+
+
+class JsonTranslation(object):
+    def __init__(self, json):
+        self.errors = []
+        if "text" in json:
+            if isinstance(json["text"], str):
+                self.text = json["text"]
+            else:
+                self.errors.append("Bad text: " +
+                                   str(json["text"]))
+                self.text = None
+        else:
+            self.text = None
+
+        if "language" in json:
+            if isinstance(json["language"], str):
+                self.language = json["language"]
+            else:
+                self.errors.append("Bad language: " +
+                                   str(json["language"]))
+                self.language = None
+        else:
+            self.language = None
 
 
 class PartOfSpeech(Enum):

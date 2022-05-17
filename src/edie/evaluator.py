@@ -5,11 +5,10 @@ from xml.etree.ElementTree import ParseError
 from pandas.plotting import parallel_coordinates
 from requests import HTTPError
 from requests.exceptions import JSONDecodeError
-
+from edie.vocabulary import Vocabulary
 from edie.api import ApiClient
 from edie.helper import validate_tei
 from edie.model import Metadata, Dictionary, Entry, JsonEntry
-from edie.vocabulary import SIZE_OF_DICTIONARY, AGGREGATION_METRICS, DICTIONARY_SIZE
 from metrics.base import MetadataMetric, EntryMetric
 
 
@@ -109,12 +108,12 @@ class Edie(object):
     def aggregated_evaluation(self, report: dict):
         df = self.metadata_evaluation_report_as_dataframe(report)
 
-        report[AGGREGATION_METRICS] = {
-            DICTIONARY_SIZE: {
-                'min': df[SIZE_OF_DICTIONARY].min(),
-                'max': df[SIZE_OF_DICTIONARY].max(),
-                'mean': df[SIZE_OF_DICTIONARY].mean(),
-                'median': df[SIZE_OF_DICTIONARY].median()
+        report[Vocabulary.AGGREGATION_METRICS] = {
+            Vocabulary.DICTIONARY_SIZE: {
+                'min': df[Vocabulary.SIZE_OF_DICTIONARY].min(),
+                'max': df[Vocabulary.SIZE_OF_DICTIONARY].max(),
+                'mean': df[Vocabulary.SIZE_OF_DICTIONARY].mean(),
+                'median': df[Vocabulary.SIZE_OF_DICTIONARY].median()
             }
         }
 

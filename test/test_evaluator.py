@@ -3,9 +3,9 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from edie.evaluator import Edie
-from edie.model import Dictionary, Metadata
+from edie.model import Dictionary, Metadata, Entry
 from edie.vocabulary import *
-from metrics.entry import AvgDefinitionLengthEvaluator
+from metrics.entry import AvgDefinitionLengthEvaluator, NumberOfSensesEvaluator
 
 
 class TestEdie(TestCase):
@@ -179,3 +179,27 @@ class TestEdie(TestCase):
             self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['max'], 0)
             self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['mean'], 0)
             self.assertGreater(edie.report[AGGREGATION_METRICS][DICTIONARY_SIZE]['median'], 0)
+
+
+    def test_ontolex_parse(self) -> None:
+        class DummyApi:
+            def __init__(self):
+                self.endpoint = ""
+
+            def ontolex(self, dict_id, entry_id):
+                return """@prefix ontolex: <http://www.w3.org/ns/lemon/ontolex#> .
+                @prefix lexinfo: <http://lexinfo.net/ontology/3.0/lexinfo/>.
+                @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+                <> a ontolex:LexicalEntry ;
+                  ontolex:canonicalForm [
+                    ontolex:writtenRep "example"@en ] ;
+                  lexinfo:partOfSpeech lexinfo:commonNoun ;
+                  ontolex:denotes [
+                    skos:definition "An example OntoLex Entry"@en ] ."""
+
+        edie = Edie(DummyApi(), entry_metrics_evaluators=[NumberOfSensesEvaluator()])
+        entry_report = {}
+        edie._entry_report("dict", entry_report, Entry({"id":"foo", "formats":["ontolex"]})) 
+        assert not entry_report.get("errors", [])
+        self.assertEqual(edie.entry_metrics_evaluators[0].result()["sensesPerEntry"], 1.0)

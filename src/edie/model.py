@@ -1,5 +1,7 @@
 import re
 from xml.etree.ElementTree import Element
+from rdflib.namespace import Namespace
+from rdflib import Graph, URIRef, RDF, Literal
 
 import dataclasses
 import dateutil.parser
@@ -500,7 +502,7 @@ class JsonEntry(object):
         errors = []
         doc = tei_entry
         entry_elem = next(doc.iter("entry"))
-        entry = {}
+        entry = {"@type": "LexicalEntry"}
         for form_elem in entry_elem.iter("form"):
             if form_elem.attrib["type"] == "lemma":
                 for orth_elem in doc.iter("orth"):
@@ -525,7 +527,43 @@ class JsonEntry(object):
                 sense_dict["definition"] = defn.text
             entry["senses"].append(sense_dict)
 
-        return JsonEntry(entry)
+        je = JsonEntry(entry)
+        je.errors.extend(errors)
+        return je
+
+    @classmethod
+    def from_ontolex_entry(cls, graph: Graph, entry_id: str):
+        """Convert an OntoLex entry into Json
+        graph: The RDF graph containing the entry
+        entry_id: The identifier for the entry"""
+        ontolex = Namespace("http://www.w3.org/ns/lemon/ontolex#")
+        lexinfo = Namespace("http://lexinfo.net/ontology/3.0/lexinfo/")
+        skos = Namespace("http://www.w3.org/2004/02/skos/core#")
+        for entry_uri in graph.subjects(RDF.type, ontolex["LexicalEntry"]):
+            entry = {"@type": "LexicalEntry"}
+            for can_form in graph.objects(entry_uri, ontolex["canonicalForm"]):
+                for form in graph.objects(can_form, ontolex["writtenRep"]):
+                    if isinstance(form, Literal):
+                        entry["canonicalForm"] = { "writtenRep": form.value }
+
+            for pos in graph.objects(entry_uri, lexinfo["partOfSpeech"]):
+                entry["partOfSpeech"] = str(pos)[len("http://lexinfo.net/ontology/3.0/lexinfo/"):]
+
+            entry["senses"] = []
+            for sense in graph.objects(entry_uri, ontolex["denotes"]):
+                sense_dict = {}
+                for defn in graph.objects(sense, skos["definition"]):
+                    if isinstance(defn, Literal):
+                        sense_dict["definition"] = defn.value
+                entry["senses"].append(sense_dict)
+
+            je = JsonEntry(entry)
+            #je.errors.extend(errors)
+            return je
+        je = JsonEntry({})
+        je.errors.append("No lexical entry in RDF")
+        return je
+
 
     @classmethod
     def normalise_pos(cls, pos, errors):

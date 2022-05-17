@@ -1,6 +1,5 @@
 from edie.model import Entry, JsonEntry
-from edie.vocabulary import JSON_FORMAT, TEI_FORMAT, ONTOLEX_FORMAT, FORMATS_PER_ENTRY, JSON_SUPPORTED_ENTRIES, \
-    TEI_SUPPORTED_ENTRIES, ONTOLEX_SUPPORTED_ENTRIES, JSON_COVERAGE, TEI_COVERAGE, ONTOLEX_COVERAGE
+from edie.vocabulary import Vocabulary
 from metrics.base import EntryMetric
 
 
@@ -16,7 +15,7 @@ class FormsPerEntryMetric(EntryMetric):
 
     def result(self):
         if self.entry_count > 0:
-            return {"formsPerEntry": self.form_count / self.entry_count}
+            return {Vocabulary.FORMS_PER_ENTRY: self.form_count / self.entry_count}
         else:
             return {}
 
@@ -43,13 +42,13 @@ class AvgDefinitionLengthEvaluator(EntryMetric):
     def result(self):
         result = {}
         if self.entry_count > 0:
-            result.update({"DefinitionLengthPerEntryByCharacter": self.total_definition_char_length / self.entry_count})
-            result.update({"DefinitionLengthPerEntryByToken": self.total_definition_token_length / self.entry_count})
+            result.update({Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_CHARACTER: self.total_definition_char_length / self.entry_count})
+            result.update({Vocabulary.DEFINITION_LENGTH_PER_ENTRY_BY_TOKEN: self.total_definition_token_length / self.entry_count})
 
         if self.senses_count > 0:
             result.update(
-                {"DefinitionLengthPerSenseByCharacter": self.total_definition_char_length / self.senses_count})
-            result.update({"DefinitionLengthPerSenseByToken": self.total_definition_token_length / self.senses_count})
+                {Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_CHARACTER: self.total_definition_char_length / self.senses_count})
+            result.update({Vocabulary.DEFINITION_LENGTH_PER_SENSE_BY_TOKEN: self.total_definition_token_length / self.senses_count})
 
         return result
 
@@ -71,7 +70,7 @@ class NumberOfSensesEvaluator(EntryMetric):
 
     def result(self):
         if self.entry_count > 0:
-            return {"sensesPerEntry": self.senses_count / self.entry_count}
+            return {Vocabulary.SENSES_PER_ENTRY: self.senses_count / self.entry_count}
         else:
             return {}
 
@@ -91,23 +90,23 @@ class SupportedFormatsEvaluator(EntryMetric):
         self.formats_count += len(entry_metadata.formats)
         self.entry_count += 1
         for metadata_format in entry_metadata.formats:
-            if metadata_format == JSON_FORMAT:
+            if metadata_format == Vocabulary.JSON_FORMAT:
                 self.json_count += 1
-            elif metadata_format == TEI_FORMAT:
+            elif metadata_format == Vocabulary.TEI_FORMAT:
                 self.tei_count += 1
-            elif metadata_format == ONTOLEX_FORMAT:
+            elif metadata_format == Vocabulary.ONTOLEX_FORMAT:
                 self.ontolex_count += 1
 
     def result(self) -> dict:
         result = {}
         if self.entry_count > 0:
-            result[FORMATS_PER_ENTRY] = self.formats_count / self.entry_count
-            result[JSON_SUPPORTED_ENTRIES] = self.json_count
-            result[TEI_SUPPORTED_ENTRIES] = self.tei_count
-            result[ONTOLEX_SUPPORTED_ENTRIES] = self.ontolex_count
-            result[JSON_COVERAGE] = self.json_count / self.entry_count
-            result[TEI_COVERAGE] = self.tei_count / self.entry_count
-            result[ONTOLEX_COVERAGE] = self.ontolex_count / self.entry_count
+            result[Vocabulary.FORMATS_PER_ENTRY] = self.formats_count / self.entry_count
+            result[Vocabulary.JSON_SUPPORTED_ENTRIES] = self.json_count
+            result[Vocabulary.TEI_SUPPORTED_ENTRIES] = self.tei_count
+            result[Vocabulary.ONTOLEX_SUPPORTED_ENTRIES] = self.ontolex_count
+            result[Vocabulary.JSON_COVERAGE] = self.json_count / self.entry_count
+            result[Vocabulary.TEI_COVERAGE] = self.tei_count / self.entry_count
+            result[Vocabulary.ONTOLEX_COVERAGE] = self.ontolex_count / self.entry_count
 
         return result
 
@@ -138,7 +137,7 @@ class DefinitionOfSenseEvaluator(EntryMetric):
     def result(self):
         result = {}
         if self.senses_count > 0:
-            result.update({"DefinitionPerSense": self.definition_count / self.senses_count})
+            result.update({Vocabulary.DEFINITIONS_PER_SENSE: self.definition_count / self.senses_count})
         if self.entry_count > 0:
-            result.update({"DefinitionPerEntry": self.definition_count / self.entry_count})
+            result.update({Vocabulary.DEFINITIONS_PER_ENTRY: self.definition_count / self.entry_count})
         return result

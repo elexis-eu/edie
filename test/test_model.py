@@ -119,7 +119,7 @@ class TestParsing(unittest.TestCase):
         json_entry: JsonEntry = JsonEntry.from_tei_entry(tei_entry, "test")
 
         self.assertTrue(isinstance(json_entry, JsonEntry))
-        self.assertEqual(json_entry.errors[0], 'No type of entry')
+        self.assertEqual(len(json_entry.errors), 0)
         self.assertEqual(json_entry.canonical_form.written_rep, "example")
         self.assertEqual(json_entry.part_of_speech, PartOfSpeech.COMMON_NOUN)
         self.assertEqual(len(json_entry.senses), 2)

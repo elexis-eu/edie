@@ -7,7 +7,7 @@ from requests import HTTPError
 from requests.exceptions import JSONDecodeError
 from edie.vocabulary import Vocabulary
 from edie.api import ApiClient
-from edie.helper import validate_tei
+from edie.helper import validate_tei, validate_ontolex
 from edie.model import Metadata, Dictionary, Entry, JsonEntry
 from metrics.base import MetadataMetric, EntryMetric
 
@@ -213,6 +213,13 @@ class Edie(object):
                 return JsonEntry.from_tei_entry(tei_entry_element, entry.id)
             except ParseError as pe:
                 raise ParseError(f"Error with entry {entry.id}: {str(pe)}")
+        elif "ontolex" in entry.formats:
+            ontolex_entry = self.lexonomy_client.ontolex(dictionary_id, entry.id)
+            #try:
+            ontolex_entry_element = validate_ontolex(ontolex_entry)
+            return JsonEntry.from_ontolex_entry(ontolex_entry_element, entry.id)
+            #except Exception as error:
+            #    raise error
 
     def _run_entry_metrics_evaluators(self, entry_details, entry_metadata):
         for entry_metric in self.entry_metrics_evaluators:

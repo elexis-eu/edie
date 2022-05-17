@@ -67,3 +67,11 @@ class ApiClient(object):
         r = requests.get(f"{self.endpoint}json/{dictionary_id}/{entry_id}",
                          headers=headers)
         return r.content
+
+    def ontolex(self, dictionary_id, entry_id):
+        headers = self.__get_header()
+        headers['Accept'] = "text/turtle"
+        r = requests.get(f"{self.endpoint}ontolex/{dictionary_id}/{entry_id}",
+                         headers=headers)
+        return r.content
+

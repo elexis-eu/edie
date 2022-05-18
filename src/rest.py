@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from flask import Flask, request
 
 from edie.service import EvaluationService
+from edie.vocabulary import Vocabulary
 
 
 def create_app():
@@ -30,6 +31,10 @@ def create_app():
             evaluation = app.evaluation_service.get_evaluation(evaluation_id)
             if evaluation is None:
                 return "Evaluation Not Available", 404
+            elif evaluation['status'] == Vocabulary.EvaluationStatus.IN_PROGRESS:
+                return evaluation, 202
+            elif evaluation['status'] == Vocabulary.EvaluationStatus.FAILED:
+                return evaluation, 500
             else:
                 return evaluation, 200
 

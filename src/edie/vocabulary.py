@@ -1,4 +1,9 @@
-class Vocabulary(object):
+class Vocabulary:
+    class EvaluationStatus:
+        IN_PROGRESS = 'in progress'
+        FAILED = 'evaluation failed'
+        COMPLETED = 'evaluation completed'
+
     SIZE_OF_DICTIONARY = "sizeOfDictionary"
     AVG_DICTIONARY_SIZE = 'avgDictionarySize'
 
@@ -11,6 +16,9 @@ class Vocabulary(object):
     FORMATS_PER_ENTRY = 'formatsPerEntry'
 
     ENTRY_REPORT = 'entry_report'
+
+
+
 
     # REPORTING PROPERTIES
     AGGREGATION_METRICS = 'aggregationMetrics'

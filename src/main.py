@@ -45,11 +45,7 @@ def setup_argparser() -> argparse.ArgumentParser:
 
 if __name__ == "__main__":
     args = setup_argparser().parse_args()
-
-    if args.max_entries:
-        max_entries = int(args.max_entries)
-    else:
-        max_entries = None
+    max_entries = int(args.max_entries) if args.max_entries else None
 
     if args.html and not exists("src/edie/edie.html"):
         print("Cannot find template for HTML output, please run from home folder")
@@ -63,16 +59,10 @@ if __name__ == "__main__":
         app = create_app()
         app.run()
     else:
-        if args.d:
-            dictionaries: [Dictionary] = edie.load_dictionaries(dictionaries=args.d)
-        else:
-            dictionaries: [Dictionary] = edie.load_dictionaries()
+        dictionaries, dictionary_report = edie.load_dictionaries(dictionaries=args.d if args.d else None)
         metadata_report = edie.evaluate_metadata(dictionaries)
-        if max_entries:
-            entry_report = edie.evaluate_entries(dictionaries, max_entries=max_entries)
-        else:
-            entry_report = edie.evaluate_entries(dictionaries)
-        merged_report = edie.evaluation_report(entry_report, metadata_report)
+        entry_report = edie.evaluate_entries(dictionaries, max_entries=max_entries)
+        merged_report = edie.evaluation_report(dictionary_report, entry_report, metadata_report)
         report = edie.aggregated_evaluation(merged_report)
 
         if args.v:
@@ -83,7 +73,7 @@ if __name__ == "__main__":
                 print('\n')
 
             print("=== AGGREGATION METRICS ===")
-            print(report[AGGREGATION_METRICS])
+            print(report[Vocabulary.AGGREGATION_METRICS])
         else:
             print(json.dumps(report, indent=2))
 

@@ -18,7 +18,7 @@ class PublisherEvaluator(MetadataMetric):
 
     def result(self):
         if self.publisher_info_present:
-            return {Vocabulary.PUBLISHER: self.publisher}
+            return {Vocabulary.PUBLISHER: [p.toJSON() for p in self.publisher]}
         else:
             return {}
 

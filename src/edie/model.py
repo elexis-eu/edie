@@ -8,6 +8,13 @@ import dateutil.parser
 from enum import Enum
 
 LANGUAGE_REGEX_PATTERN = "^\\w{2,3}$"
+VALID_POS_VALUE = set(["adjective", "adposition", "adverb", "auxiliary",
+                   "coordinatingConjunction", "determiner", "interjection",
+                   "commonNoun", "numeral", "particle", "pronoun", "properNoun",
+                   "punctuation", "subordinatingConjunction", "symbol", "verb",
+                   "other", "ADJ", "ADP", "ADV", "AUX", "CCONJ",
+                   "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
+                   "PUNCT", "SCONJ", "SYM", "VERB", "X"])
 
 
 class Metadata(object):
@@ -282,6 +289,16 @@ class Agent(object):
         else:
             self.url = None
 
+    def toJSON(self):
+        obj = {}
+        if self.name:
+            obj["name"] = self.name
+        if self.email:
+            obj["email"] = self.email
+        if self.url:
+            obj["url"] = self.url
+        return obj
+
 
 class Entry(object):
     def __init__(self, json):
@@ -332,9 +349,7 @@ class Entry(object):
 
         if "partOfSpeech" in json:
             if isinstance(json["partOfSpeech"], list):
-                if all(p in ["ADJ", "ADP", "ADV", "AUX", "CCONJ",
-                             "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN",
-                             "PUNCT", "SCONJ", "SYM", "VERB", "X"]
+                if all(p in VALID_POS_VALUE
                        for p in json["partOfSpeech"]):
                     self.part_of_speech = [parse_part_of_speech(p, self.errors)
                                            for p in json["partOfSpeech"]]
@@ -399,11 +414,7 @@ class JsonEntry(object):
             self.canonical_form = None
 
         if "partOfSpeech" in json:
-            if json["partOfSpeech"] in ["adjective", "adposition", "adverb",
-                                        "auxiliary", "coordinatingConjunction", "determiner",
-                                        "interjection", "commonNoun", "numeral", "particle", "pronoun",
-                                        "properNoun", "punctuation", "subordinatingConjunction",
-                                        "symbol", "verb", "other"]:
+            if json["partOfSpeech"] in VALID_POS_VALUE:
                 self.part_of_speech = parse_part_of_speech(json["partOfSpeech"],
                                                            self.errors)
             else:

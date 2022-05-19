@@ -78,8 +78,12 @@ if __name__ == "__main__":
             print(json.dumps(report, indent=2))
 
         if args.html:
+            def _percent(this, options, item):
+                return "%.1f" % (item * 100)
+            def _3dp(this, options, item):
+                return "%.2f" % (item)
             compiler = pybars.Compiler()
             template = compiler.compile(open("src/edie/edie.html").read())
 
             with open(args.html, "w") as outp:
-                outp.write(template(report))
+                outp.write(template(report, helpers={"percent":_percent,"num":_3dp}))

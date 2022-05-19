@@ -23,19 +23,24 @@ class Edie(object):
         self.aggregate_evaluators: []
 
     def load_dictionaries(self, dictionaries: [str] = None, limit=-1):
-        dicts = []
-        if dictionaries:
-            dictionary_ids = dictionaries
-        else:
-            try:
-                dictionary_ids = self.lexonomy_client.dictionaries()["dictionaries"]
-            except HTTPError as error:
-                self.report["available"] = False
-                self._add_errors(self.report, [str(error)])
+        report = {"endpoint": self.lexonomy_client.endpoint, "available": True, "dictionaries": {}}
+        dictionary_ids = []
+        try:
+            dictionary_ids = dictionaries if dictionaries else self.lexonomy_client.dictionaries()["dictionaries"]
+        except HTTPError as error:
+            report["available"] = False
+            self._add_errors(report, [str(error)])
+
+        sys.stderr.write(f'Evaluating {len(dictionary_ids):d} dictionaries\n')
+
+        return self.loop_dictionary_retrieval(dictionary_ids, limit, report)
+
+
+    def loop_dictionary_retrieval(self, dictionary_ids, limit, report):
         if limit == -1:
             limit = len(dictionary_ids)
-        sys.stderr.write(f'Evaluating {len(dictionary_ids):d} dictionaries\n')
         count = 0
+        dicts = []
         for dictionary_id in dictionary_ids:
             try:
                 if count < limit:
@@ -43,13 +48,13 @@ class Edie(object):
                     metadata = Metadata(self.lexonomy_client.about(dictionary_id))
                     dictionary = Dictionary(dictionary_id, metadata)
                     dicts.append(dictionary)
-                count+=1
+                count += 1
             except HTTPError as error:
-                self._add_errors(self.report, [str(error)])
-                self.report["available"] = False
+                self._add_errors(report, [str(error)])
+                report["available"] = False
                 sys.stderr.write(f'Failed loading {dictionary_id} dictionary \n')
 
-        return dicts
+        return dicts, report
 
     def evaluate_metadata(self, dictionaries: [Dictionary]) -> dict:
         report = {}
@@ -75,7 +80,9 @@ class Edie(object):
 
         return report
 
-    def evaluate_entries(self, dictionaries: [Dictionary], max_entries=100) -> dict:
+    def evaluate_entries(self, dictionaries: [Dictionary], max_entries=None) -> dict:
+        if max_entries is None:
+            max_entries = 100
         report = {}
         for dictionary in dictionaries:
             entry_report = {}
@@ -177,18 +184,17 @@ class Edie(object):
 
         return entries_offset
 
-    def evaluation_report(self, entry_report: dict, metadata_report: dict):
-        report = {"endpoint": self.lexonomy_client.endpoint, "available": True, "dictionaries": {}}
+    def evaluation_report(self, dictionary_report:dict, entry_report: dict, metadata_report: dict):
         for key in entry_report.keys():
-            if key not in report['dictionaries']:
-                report['dictionaries'][key] = {'entry_report': {}, 'metadata_report': {}}
-            report['dictionaries'][key]['entry_report'] = entry_report[key]['entry_report']
+            if key not in dictionary_report['dictionaries']:
+                dictionary_report['dictionaries'][key] = {'entry_report': {}, 'metadata_report': {}}
+            dictionary_report['dictionaries'][key]['entry_report'] = entry_report[key]['entry_report']
         for key in metadata_report.keys():
-            if key not in report['dictionaries']:
-                report['dictionaries'][key] = {'entry_report': {}, 'metadata_report': {}}
-            report['dictionaries'][key]['metadata_report'] = metadata_report[key]['metadata_report']
+            if key not in dictionary_report['dictionaries']:
+                dictionary_report['dictionaries'][key] = {'entry_report': {}, 'metadata_report': {}}
+            dictionary_report['dictionaries'][key]['metadata_report'] = metadata_report[key]['metadata_report']
 
-        return report
+        return dictionary_report
 
     def _entry_report(self, dictionary_id: str, entry_report: dict, entry: Entry):
         retrieved_entry: JsonEntry = self._retrieve_entry(dictionary_id, entry)

@@ -50,26 +50,26 @@ class TestEdie(TestCase):
 
         self.api_client.dictionaries.assert_not_called()
         self.api_client.about.assert_called_once_with(self.dict_id_1)
-        self.assertEqual(len(response), 1)
-        self.assertIsInstance(response[0], Dictionary)
-        self.assertEqual(response[0].id, self.dict_id_1)
+        self.assertEqual(len(response[0]), 1)
+        self.assertIsInstance(response[0][0], Dictionary)
+        self.assertEqual(response[0][0].id, self.dict_id_1)
 
     def test_load_dictionaries(self):
         edie = Edie(self.api_client)
 
-        response: [Dictionary] = edie.load_dictionaries()
+        response: tuple[[Dictionary], dict]= edie.load_dictionaries()
 
         # api_client.dictionaries.assert_called_once()
         self.assertEqual(self.api_client.about.call_count, 2)
-        self.assertEqual(len(response), 2)
-        self.assertIsInstance(response[0], Dictionary)
+        self.assertEqual(len(response[0]), 2)
+        self.assertIsInstance(response[0][0], Dictionary)
 
     def test_metadata_with_errors_evaluation(self):
         dictionary_id = [self.dict_id_1]
         edie = Edie(self.api_client)
-        dictionaries = edie.load_dictionaries(dictionary_id)
+        dictionaries: tuple[Dictionary, dict] = edie.load_dictionaries(dictionary_id)
 
-        report = edie.evaluate_metadata(dictionaries)
+        report = edie.evaluate_metadata(dictionaries[0])
 
         self.assertTrue(self.dict_id_1 in report)
         self.assertTrue(report[self.dict_id_1]['metadata_report']['errors'])
@@ -79,9 +79,9 @@ class TestEdie(TestCase):
         recency_evaluator.result.return_value = {'recency': 100}
         dictionary_id = [self.dict_id_1]
         edie = Edie(self.api_client, metadata_metrics_evaluators=[recency_evaluator])
-        dictionaries = edie.load_dictionaries(dictionary_id)
+        dictionaries: tuple[[Dictionary], dict] = edie.load_dictionaries(dictionary_id)
 
-        report = edie.evaluate_metadata(dictionaries)
+        report = edie.evaluate_metadata(dictionaries[0])
 
         self.assertIsNotNone(report[self.dict_id_1]['metadata_report']['recency'])
 

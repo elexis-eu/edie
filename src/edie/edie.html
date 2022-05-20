@@ -48,13 +48,20 @@
                         <th>Metric</th>
                         <th>Value</th>
                         <th></th>
+                    </tr>
                     {{#if this.metadata_report.sizeOfDictionary}}
                     <tr>
                         <td>Size of Dictionary</td>
                         <td>{{this.metadata_report.sizeOfDictionary}} entries</td>
                     </tr>
-                </table>
                     {{/if}}
+                    {{#if this.metadata_report.metadataNonemptyFields}}
+                    <tr>
+                        <td>Metadata Fields</td>
+                        <td>{{this.metadata_report.metadataNonemptyFields}} fields</td>
+                    </tr>
+                    {{/if}}
+                </table>
                                                     
                 <h3>Entry Report</h3>
                     
@@ -70,6 +77,60 @@
                 <p><i class="fa-solid fa-circle-check" style="color:green;"></i> No Errors!</p>
                 {{/if}}
 
+                <table class="table">
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th></th>
+                    </tr>
+                    {{#if this.entry_report.jsonSupportedEntries}}
+                    <tr>
+                        <td>Entries in JSON</td>
+                        <td>{{this.entry_report.jsonSupportedEntries}} ({{#percent this.entry_report.jsonCoverage}}{{/percent}} %)</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.entry_report.teiSupportedEntries}}
+                    <tr>
+                        <td>Entries in TEI</td>
+                        <td>{{this.entry_report.teiSupportedEntries}} ({{#percent this.entry_report.teiCoverage}}{{/percent}} %)</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.entry_report.ontolexSupportedEntries}}
+                    <tr>
+                        <td>Entries in OntoLex</td>
+                        <td>{{this.entry_report.ontolexSupportedEntries}} ({{#percent this.entry_report.ontolexCoverage}}{{/percent}} %)</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.entry_report.formatsPerEntry}}
+                    <tr>
+                        <td>Formats Supported</td>
+                        <td>{{#num this.entry_report.formatsPerEntry}}{{/num}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.entry_report.formsPerEntry}}
+                    <tr>
+                        <td>Forms per Entry</td>
+                        <td>{{#num this.entry_report.formsPerEntry}}{{/num}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.entry_report.sensesPerEntry}}
+                    <tr>
+                        <td>Senses per Entry</td>
+                        <td>{{#num this.entry_report.sensesPerEntry}}{{/num}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.entry_report.definitionsPerEntry}}
+                    <tr>
+                        <td>Definitions per Entry</td>
+                        <td>{{#num this.entry_report.definitionsPerEntry}}{{/num}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if this.entry_report.definitionLengthPerSenseByToken}}
+                    <tr>
+                        <td>Definition Length</td>
+                        <td>{{#num this.entry_report.formsPerEntry}}{{/num}} tokens</td>
+                    </tr>
+                    {{/if}}
             </div>
             {{/each}}
         </div>

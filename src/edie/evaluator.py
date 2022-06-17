@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from xml.etree.ElementTree import ParseError
 from pandas.plotting import parallel_coordinates
 from requests import HTTPError
-from requests.exceptions import JSONDecodeError
+from requests.exceptions import JSONDecodeError, RequestException
 from edie.vocabulary import Vocabulary
 from edie.api import ApiClient
 from edie.helper import validate_tei, validate_ontolex
@@ -144,6 +144,8 @@ class Edie(object):
                 self._add_errors(entry_report, [str(error)])
             except JSONDecodeError as error:
                 self._add_errors(entry_report, [str(error)])
+            except RequestException as error:
+                self._add_errors(entry_report, [str(error)])
             if not entries:
                 break
             entries_offset = self._handle_entries(dictionary, entries, entry_report, max_entries, entries_offset)
@@ -180,6 +182,8 @@ class Edie(object):
             except ParseError as parse_error:
                 self._add_errors(entry_report, [str(parse_error)])
             except JSONDecodeError as json_decode_error:
+                self._add_errors(entry_report, [str(json_decode_error)])
+            except RequestException as json_decode_error:
                 self._add_errors(entry_report, [str(json_decode_error)])
 
         return entries_offset
